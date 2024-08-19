@@ -24,12 +24,12 @@ public class Token
 
 public enum TokenType {
 // Fichas de un solo carácter.
-    Parentesis_abierto, Parentesis_cerrado, Llave_abierta, Llave_cerrada, Coma, Punto, Menos, Más,
-    Punto_y_coma, Barra_oblicua, Asterizco,
+    Parentesis_abierto, Parentesis_cerrado, Llave_abierta, Llave_cerrada, Corchete_Abierto, Corchete_Cerrado, 
+    Coma, Punto, Menos, Más, Punto_y_coma, Barra_oblicua, Asterizco, Doble_punto,
 
     // Tokens de uno o doscaracteres. 
     Bang, Bang_igual, Igual, Igual_igual, Mayor, Mayor_igual, Menor, Menor_igual, Slach,
-    Mas_mas, Concatenacion, Concatenacion_Espaciado,
+    Mas_mas, Concatenacion, Concatenacion_Espaciado, Lambda, 
 
     // Literales.
     Identificador, Cadena, Número,
@@ -38,18 +38,23 @@ public enum TokenType {
     And, Class, Else, False, For, If, Or, Return, True, Var, While, Fun, Print,
 
     Effect, Name, Params, Amount, Action, Card, Type, Faction, Power, Range, OnActivation, Selector, 
-    Source, Single, Predicate, PosAction, Effect_card, 
+    Source, Single, Predicate, PosAction, Effect_card, Targets, Context,
 
     Fin, Null,
 
 }
 
-public enum Range
-{
-    Melee, Ranged, Siege
-}
 
 public enum Source
 {
     board, hand, otherHand, deck, otherDeck, field, otherField, parent
+}
+
+public enum Tipo
+{
+    Numero,
+    Cadena,
+    Bool,
+    nil,
+
 }

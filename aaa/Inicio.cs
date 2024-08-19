@@ -39,7 +39,8 @@ public class Inicio {
         {
             
                 Console.Write("> ");
-                string linea = "x = 5 > 4; y = 8 * 2; z = 30 - 28; Print ( x ); Print ( y @@ z );";
+                string input = @"D:\Amanda\aaa\tests\test1.txt";
+                string linea = File.ReadAllText(input);
             
                 Run(linea);
                 hadError = false;
@@ -52,9 +53,9 @@ public class Inicio {
         Escaner escaner = new Escaner(fuente);
         List<Token> tokens = escaner.escanearTokens();
         Parser parser = new Parser(tokens);
-        List<Declaracion> declaraciones = parser.parse();
+        List<claseMadre> cartas = parser.parse();
         if (hadError) return;
-        interprete.interpretar(declaraciones);
+        interprete.Interpretar(cartas);
 
     }
 

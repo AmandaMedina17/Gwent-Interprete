@@ -113,10 +113,12 @@ public abstract class Expresion
     public class ExpresionLiteral : Expresion
     {
         public object valor;
+        public Tipo Type;
 
-        public ExpresionLiteral(object valor)
+        public ExpresionLiteral(object valor, Tipo Type)
         {
             this.valor = valor;
+            this.Type = Type;
         
         }
 
@@ -124,6 +126,7 @@ public abstract class Expresion
         {
             return visitante.visitarExpresionLiteral(this);
         }
+
     }
 
     //Expresion Logica
@@ -220,6 +223,8 @@ public abstract class Expresion
 
 
 }
+
+
 
 
 

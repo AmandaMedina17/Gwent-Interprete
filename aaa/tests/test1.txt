@@ -1,0 +1,9 @@
+effect {
+    Name: "Damage",
+    Params: {
+        Amount: Number
+    },
+    Action: (targets, context) => {
+        Print "amanda";
+    }
+}

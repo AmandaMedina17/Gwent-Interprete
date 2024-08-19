@@ -49,21 +49,27 @@ public class Escaner
         case ')': addToken(TokenType.Parentesis_cerrado); break;
         case '{': addToken(TokenType.Llave_abierta); break;
         case '}': addToken(TokenType.Llave_cerrada); break;
+        case '[': addToken(TokenType.Corchete_Abierto); break;
+        case ']': addToken(TokenType.Corchete_Cerrado); break;
         case ',': addToken(TokenType.Coma); break;
         case '.': addToken(TokenType.Punto); break;
         case '-': addToken(TokenType.Menos); break;
         case ';': addToken(TokenType.Punto_y_coma); break;
         case '*': addToken(TokenType.Asterizco); break;
+        case ':': addToken(TokenType.Doble_punto); break;
 
         // Dos caracteres
         case '!': addToken(match('=') ? TokenType.Bang_igual : TokenType.Bang); break;
-        case '=': addToken(match('=') ? TokenType.Igual_igual : TokenType.Igual); break;
         case '<': addToken(match('=') ? TokenType.Menor_igual : TokenType.Menor); break;
         case '>': addToken(match('=') ? TokenType.Mayor_igual : TokenType.Mayor); break;
         case '+': addToken(match('+') ? TokenType.Mas_mas : TokenType.Más); break;
         case '&': addToken(match('&') ? TokenType.And : throw new ArgumentException(linea + " caracter inesperado")); break;
         case '|': addToken(match('|') ? TokenType.Or : throw new ArgumentException(linea + " caracter inesperado")); break;
         case '@': addToken(match('@') ? TokenType.Concatenacion_Espaciado : TokenType.Concatenacion); break;
+        case '=': if(match('=')) addToken(TokenType.Igual_igual);
+                    else if(match('>')) addToken(TokenType.Lambda);
+                    else addToken(TokenType.Igual); break;
+
 
         case '/':
             if (match('/')) 
@@ -184,7 +190,7 @@ public class Escaner
 
         advance();
 
-        string value = fuente.Substring(start + 1, current - 1);
+        string value = fuente.Substring(start + 1, current - start - 1);
         addToken(TokenType.Cadena, value);    
     }
 
@@ -226,7 +232,6 @@ public class Escaner
     {
         keywords = new Dictionary<string, TokenType>();
 
-        keywords.Add("class", TokenType.Class);
         keywords.Add("false", TokenType.False);
         keywords.Add("for", TokenType.For);
         keywords.Add("else", TokenType.Else);
@@ -236,7 +241,6 @@ public class Escaner
         keywords.Add("effect", TokenType.Effect);
         keywords.Add("Name", TokenType.Name);
         keywords.Add("Params", TokenType.Params);
-        keywords.Add("Amount", TokenType.Amount);
         keywords.Add("Action", TokenType.Action);
         keywords.Add("card", TokenType.Card);
         keywords.Add("Type", TokenType.Type);
@@ -251,6 +255,9 @@ public class Escaner
         keywords.Add("Predicate", TokenType.Predicate);
         keywords.Add("PostAction", TokenType.PosAction);
         keywords.Add("Print", TokenType.Print);
+        keywords.Add("targets", TokenType.Targets);
+        keywords.Add("context", TokenType.Context);
+
 
 
     }

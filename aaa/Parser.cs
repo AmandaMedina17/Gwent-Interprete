@@ -14,15 +14,16 @@ class Parser
     }
 
     
-    public List<Declaracion> parse() //Este método analiza la lista de tokens y genera una lista de declaraciones.
+    public List<claseMadre> parse() //Este método analiza la lista de tokens y genera una lista cartas.
     {
-        List<Declaracion> declaracions = new List<Declaracion>();             
+        List<claseMadre> cartasyefectos = new List<claseMadre>();  
+
         while (!esFinal()) 
         {
-            declaracions.Add(declara());
+            cartasyefectos.Add(declararCartaOEfecto());
         }        
         
-        return declaracions;
+        return cartasyefectos;
     }
     
 
@@ -232,13 +233,19 @@ class Parser
     //primario → NUMBER | STRING | "true" | "false" | "null"| "(" expresión ")"
     public Expresion primario() 
     {
-        if (coincide(TokenType.False)) return new Expresion.ExpresionLiteral(false); 
-        if (coincide(TokenType.True)) return new Expresion.ExpresionLiteral(true); 
-        if (coincide(TokenType.Null)) return new Expresion.ExpresionLiteral(null);
+        if (coincide(TokenType.False)) return new Expresion.ExpresionLiteral(false, Tipo.Bool); 
+        if (coincide(TokenType.True)) return new Expresion.ExpresionLiteral(true, Tipo.Bool); 
+        if (coincide(TokenType.Null)) return new Expresion.ExpresionLiteral(null, Tipo.nil);
         
-        if (coincide(TokenType.Número, TokenType.Cadena)) 
+        if (coincide(TokenType.Número)) 
         {
-            return new Expresion.ExpresionLiteral(anterior().Literal);
+            return new Expresion.ExpresionLiteral(anterior().Literal, Tipo.Numero);
+        }
+
+        if(coincide(TokenType.Cadena))
+        {
+            return new Expresion.ExpresionLiteral(anterior().Literal, Tipo.Cadena);
+
         }
 
         if (coincide(TokenType.Identificador)) 
@@ -297,7 +304,7 @@ class Parser
         if (coincide(TokenType.For)) return forDeclaracion();
         if (coincide(TokenType.Print)) return ImprimirDeclaracion();
         if (coincide(TokenType.While)) return whileDeclaracion();
-        if (coincide(TokenType.Llave_abierta)) return new Declaracion.Bloque(bloque());
+        
 
         return ExpresionDeclaracion();
     }
@@ -322,7 +329,6 @@ class Parser
     {
         try 
         {
-            // if (coincide(TokenType.Action)) return funcion("funcion");
             if (verifica(TokenType.Identificador)) return varDeclaracion();
 
             return declaracion();
@@ -348,13 +354,17 @@ class Parser
   }
 
     
-    public List<Declaracion> bloque() 
+    public List<claseMadre> bloque() 
     {
-        List<Declaracion> declaraciones = new List<Declaracion>();
+        List<claseMadre> declaraciones = new List<claseMadre>();
 
-        while (!verifica(TokenType.Llave_cerrada) && !esFinal()) {
-        declaraciones.Add(declara());
+        do
+        {
+            declaraciones.Add(declara());
         }
+        while (!verifica(TokenType.Llave_cerrada) && !esFinal());
+
+        coincide(TokenType.Punto_y_coma);
 
         consume(TokenType.Llave_cerrada, "Se esperaba } despues del bloque");
         return declaraciones;
@@ -404,18 +414,171 @@ class Parser
 
         if (incremento != null) 
         {
-            cuerpo = new Declaracion.Bloque(new List<Declaracion>{cuerpo, new Declaracion.Expression(incremento)});
+            cuerpo = new Declaracion.Bloque(new List<claseMadre>{cuerpo, new Declaracion.Expression(incremento)});
         }
 
-        if (condicion == null) condicion = new Expresion.ExpresionLiteral(true);
+        if (condicion == null) condicion = new Expresion.ExpresionLiteral(true, Tipo.Bool);
         cuerpo = new Declaracion.While(condicion, cuerpo);
 
         if (inicializador != null) 
         {
-            cuerpo = new Declaracion.Bloque(new List<Declaracion>{inicializador, cuerpo});
+            cuerpo = new Declaracion.Bloque(new List<claseMadre>{inicializador, cuerpo});
         }
 
         return cuerpo;
         
     }
+
+    public claseMadre declararCartaOEfecto()
+    {
+        if (coincide(TokenType.Card))
+        {
+            if(coincide(TokenType.Llave_abierta)) return cardDeclaracion();
+        }
+
+        if (coincide(TokenType.Effect))
+        {
+            if(coincide(TokenType.Llave_abierta)) return effectDeclaracion();
+        }
+        return null;
+
+    }
+
+    public Card cardDeclaracion()
+    {
+        Expresion.ExpresionLiteral name = null;
+        Expresion.ExpresionLiteral faction = null;
+        Expresion.ExpresionLiteral type = null;
+        Expresion.ExpresionLiteral power = null;
+        List<Expresion> range = new List<Expresion>();
+
+        do
+        {
+            try
+            {
+                if(coincide(TokenType.Name)) name = AsignarExpresion(name is null);  
+                else if(coincide(TokenType.Faction)) faction = AsignarExpresion(faction is null);
+                else if(coincide(TokenType.Type)) type = AsignarExpresion(type is null);
+                else if(coincide(TokenType.Power)) power = AsignarExpresion(power is null);
+                else if(coincide(TokenType.Range)) 
+                {
+                    if(!coincide(TokenType.Doble_punto)) new ParseError();
+                    
+                    if(coincide(TokenType.Corchete_Abierto))
+                    {
+                        do{
+                        range.Add(expresion());
+                        if(!coincide(TokenType.Coma)) new ParseError();
+                        }while(!coincide(TokenType.Corchete_Cerrado));
+                    }
+                    else range.Add(expresion());
+                    if(!coincide(TokenType.Coma)) new ParseError();
+                }
+
+            }
+            catch{System.Console.WriteLine("no es una carta");}
+        }while(!coincide(TokenType.Llave_cerrada));
+
+        if(name == null) throw new Exception("Carta sin nombre");
+        if(type == null) throw new Exception("Carta sin tipo");
+        if(faction == null) throw new Exception("Carta sin faccion");
+        if(power == null) throw new Exception("Carta sin poder");
+        if(range.Count == 0) throw new Exception("Lista de range vacia");
+
+
+        return new Card(name, type, faction, power, range);
+
+
+    } 
+
+    public Effect effectDeclaracion()
+    {
+        Expresion name = null;
+        Declaracion Action = null;
+        Token targets;
+        Token context;
+        List<(Token, Token)> parametros = new List<(Token, Token)>();
+
+        do{
+            try{
+                if(verifica(TokenType.Fin)) error(mira(), "Unfinished effect.");
+                else if(coincide(TokenType.Name)) name = AsignarExpresion(name is null);
+
+                else if(coincide(TokenType.Params)) 
+                {
+                    if(coincide(TokenType.Doble_punto))
+                    {
+                        if(coincide(TokenType.Llave_abierta))
+                        {
+                            parametros.Add(Parametros());
+                        }
+                        else error(mira(), "Parameters are expected");
+                        if(!coincide(TokenType.Llave_cerrada)) error(mira(), "Se esperaba un llave cerrada");
+                        if(!coincide(TokenType.Coma)) error(mira(), "Se esperaba una coma");
+                    }
+                    else error(mira(), "Two points expected");
+                }
+
+                else if(coincide(TokenType.Action))
+                {
+                    if(!(Action == null)) throw error(mira(), "Expresion ya asignada");
+
+                    if(coincide(TokenType.Doble_punto))
+                    {
+                        if(coincide(TokenType.Parentesis_abierto))
+                        {
+                            if(coincide(TokenType.Targets)) targets = anterior();
+                            if(!coincide(TokenType.Coma)) error(mira(), "A comma is expected");
+                            if(coincide(TokenType.Context)) context = anterior();
+                            if(!coincide(TokenType.Parentesis_cerrado)) error(mira(), "Closing parenthesis expected");
+                        }
+                        consume(TokenType.Lambda, "'=>' expected");
+                        if(coincide(TokenType.Llave_abierta)) Action = new Declaracion.Bloque(bloque());
+                        if(Action == null) error(mira(), "Body action is expected");
+                    }
+                    else error(mira(), "Two points expected");
+                }
+                else error(mira(), "An action was expected");
+            }
+            catch (ParseError)
+            {
+                sincronizar();
+            }
+        }while(!coincide(TokenType.Llave_cerrada));
+        
+        if(name == null) throw new Exception("Efecto sin nombre");
+        if(Action == null) throw new Exception("Efecto sin action");
+
+        return new Effect(name, Action, parametros);
+    }
+
+    public Expresion.ExpresionLiteral AsignarExpresion(bool estado)
+    {
+        if(!estado) throw error(mira(), "Expresion ya asiganda");
+
+        Expresion.ExpresionLiteral Expr = null;
+
+        if(coincide(TokenType.Doble_punto)) Expr = (Expresion.ExpresionLiteral?)primario();
+
+        if(!coincide(TokenType.Coma)) error(mira(), "A comma is expected");
+        return Expr;
+    }
+
+    public (Token, Token ) Parametros()
+    {
+        Token nombre = null;
+        Token tipo = null;
+
+        if(coincide(TokenType.Identificador)) nombre = anterior();
+        else error(mira(), "Se esperaba un identificador.");
+
+        if(!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaban dos puntos.");
+
+        if(coincide(TokenType.Identificador)) tipo = anterior();
+        else error(mira(), "Se esperaba un identificador.");
+
+        return (nombre, tipo);
+    }
+
+
 }

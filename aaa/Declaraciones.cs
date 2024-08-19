@@ -1,6 +1,6 @@
-public abstract class Declaracion
+public abstract class Declaracion : claseMadre
 {
-    public interface IVisitor<T>
+    public new interface IVisitor<T>
     {
         T VisitarBloqueDecl(Bloque Decl);
         T VisitarClassDecl(Class Decl);
@@ -16,9 +16,9 @@ public abstract class Declaracion
 
     public class Bloque : Declaracion
     {
-        public List<Declaracion> declaraciones { get; }
+        public List<claseMadre> declaraciones { get; }
 
-        public Bloque(List<Declaracion> declaraciones)
+        public Bloque(List<claseMadre> declaraciones)
         {
             this.declaraciones = declaraciones;
         }
@@ -26,6 +26,11 @@ public abstract class Declaracion
         public override T Aceptar<T>(IVisitor<T> visitante)
         {
             return visitante.VisitarBloqueDecl(this);
+        }
+
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -46,7 +51,10 @@ public abstract class Declaracion
             return visitante.VisitarClassDecl(this);
         }
 
-       
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Expression : Declaracion
@@ -63,6 +71,10 @@ public abstract class Declaracion
             return visitante.VisitarExpresionDecl(this);
         }
 
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Funcion : Declaracion
@@ -82,7 +94,10 @@ public abstract class Declaracion
             return visitante.VisitarFuncionDecl(this);
         }
 
-        
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class If : Declaracion
@@ -100,7 +115,12 @@ public abstract class Declaracion
         public override T Aceptar<T>(IVisitor<T> visitante)
         {
             return visitante.VisitarIfDecl(this);
-        }  
+        }
+
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Print : Declaracion
@@ -117,6 +137,10 @@ public abstract class Declaracion
             return visitante.VisitarPrintDecl(this);
         }
 
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Return : Declaracion
@@ -134,7 +158,10 @@ public abstract class Declaracion
             return visitante.VisitarReturnDecl(this);
         }
 
-    
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Var : Declaracion
@@ -148,6 +175,11 @@ public abstract class Declaracion
         public override T Aceptar<T>(IVisitor<T> visitante)
         {
             return visitante.VisitarVarDecl(this);
+        }
+
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
         }
 
         public Token Nombre { get; }
@@ -169,7 +201,10 @@ public abstract class Declaracion
             return visitante.VisitarWhileDecl(this);
         }
 
-        
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 

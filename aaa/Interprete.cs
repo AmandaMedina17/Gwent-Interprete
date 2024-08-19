@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
 
-public class Interprete : Expresion.IVisitante<Object>, Declaracion.IVisitor<object>
+public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<object>
 {
-    private Entorno entorno = new Entorno();  // Es una estructura que mantiene las variables y sus valores actuales. Actúa como un contexto de ejecución para las expresiones y declaraciones
+    private Entorno entorno = new Entorno();  // Es una estructura que mantiene las variables y sus valores actuales. Actúa como un contexto de ejecución para las expresiones y cards
     
     //Expresion de Asignacion
     public object visitarAsignacionExpresion(Expresion.AsignarExpresion obj)
@@ -143,13 +143,13 @@ public class Interprete : Expresion.IVisitante<Object>, Declaracion.IVisitor<obj
         throw new NotImplementedException();
     }
 
-    public void interpretar(List<Declaracion> declaraciones) 
+    public void Interpretar(List<claseMadre> cards) 
     { 
         try 
         {
-            foreach (Declaracion declaracion in declaraciones)
+            foreach (claseMadre card in cards)
              {
-                Ejecutar(declaracion); 
+                Ejecutar(card); 
             }       
         } 
         catch (RuntimeError error) 
@@ -206,26 +206,26 @@ public class Interprete : Expresion.IVisitante<Object>, Declaracion.IVisitor<obj
         return obj.ToString();
     }
 
-    private void Ejecutar(Declaracion decl)
+    private void Ejecutar(claseMadre decl)
     {
         decl.Aceptar(this);
     }
-    public object VisitarBloqueDecl(Declaracion.Bloque Decl)
+    public object VisitarBloqueDecl(Declaracion.Bloque decl)
     {
-        ejecutarBloque(Decl.declaraciones, new Entorno(entorno));
+        ejecutarBloque(decl.declaraciones, new Entorno(entorno));
         return null;
     }
 
-    private void ejecutarBloque(List<Declaracion> declaraciones, Entorno entorno) 
+    private void ejecutarBloque(List<claseMadre> cards, Entorno entorno) 
     {
         Entorno anterior = this.entorno;
         try 
         {
             this.entorno = entorno;
 
-            foreach (Declaracion declaracion in declaraciones) 
+            foreach (claseMadre card in cards) 
             {
-                Ejecutar(declaracion);
+                Ejecutar(card);
             }
         } 
         finally 
