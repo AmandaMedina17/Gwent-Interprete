@@ -58,3 +58,8 @@ public enum Tipo
     nil,
 
 }
+
+public enum Faction
+{
+    Nordic_Gods, Greek_Gods,
+}

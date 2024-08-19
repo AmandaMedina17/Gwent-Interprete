@@ -492,8 +492,8 @@ class Parser
     } 
 
     public Effect effectDeclaracion()
-    {
-        Expresion name = null;
+    { 
+        Expresion.ExpresionLiteral name = null;
         Declaracion Action = null;
         Token targets;
         Token context;

@@ -21,7 +21,7 @@ public class Card : claseMadre
         throw new NotImplementedException();
     }
 
-    public bool SemanticaCorrecta()
+    public bool SemanticaIncorrecta()
     {
         bool hayError = false;
         if(!(name.Type is Tipo.Cadena)) hayError = true;

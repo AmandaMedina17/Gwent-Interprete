@@ -2,11 +2,11 @@ using System.Security.Cryptography.X509Certificates;
 
 public class Effect: claseMadre
 {
-    private Expresion name;
+    private Expresion.ExpresionLiteral name;
     public Declaracion Action;
     private Dictionary<string, Tipo> Params;
 
-    public Effect(Expresion name, Declaracion Action, List<(Token, Token)> Params)
+    public Effect(Expresion.ExpresionLiteral name, Declaracion Action, List<(Token, Token)> Params)
     {
         this.name = name;
         this.Action = Action;
@@ -27,6 +27,14 @@ public class Effect: claseMadre
 
             this.Params.Add(dupla.Item1.Valor, tipo);
         }
+    }
+
+    public bool SemanticaIncorrecta()
+    {
+        bool hayError = false;
+
+        if (!(name.Type is Tipo.Cadena)) hayError = true;
+        return hayError;
     }
 
     internal override void Aceptar(Interprete interprete)
