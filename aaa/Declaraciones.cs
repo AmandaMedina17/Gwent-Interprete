@@ -2,18 +2,50 @@ public abstract class Declaracion : claseMadre
 {
     public new interface IVisitor<T>
     {
+        T VisitarForDecl(For Decl);
         T VisitarBloqueDecl(Bloque Decl);
-        T VisitarClassDecl(Class Decl);
         T VisitarExpresionDecl(Expression Decl);
         T VisitarFuncionDecl(Funcion Decl);
-        T VisitarIfDecl(If Decl);
-        T VisitarPrintDecl(Print Decl);
         T VisitarReturnDecl(Return Decl);
         T VisitarVarDecl(Var Decl);
         T VisitarWhileDecl(While Decl);
+        T VisitarIncYDec(IncYDec Decl);
     }
 
 
+
+    public class IncYDec : Declaracion
+    {
+        public Token var;
+        public Token operador;
+        public Expresion valor;
+        
+        public IncYDec(Token var, Token operador, Expresion valor)
+        {
+            this.var = var;
+            this.operador = operador;
+            this.valor = valor;
+        }
+        public override T Aceptar<T>(IVisitor<T> visitante)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Semantica()
+        {
+            if(!(valor is null) && !valor.Semantica())
+            {
+                return false;
+            }
+           
+            return true;
+        }
+
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
+    }
     public class Bloque : Declaracion
     {
         public List<claseMadre> declaraciones { get; }
@@ -32,29 +64,28 @@ public abstract class Declaracion : claseMadre
         {
             throw new NotImplementedException();
         }
-    }
 
-    public class Class : Declaracion
-    {
-        public Token Nombre { get; }
-        public Expresion.ExpresionVariable Superclass { get; }
-        public List<Declaracion.Funcion> Metodos { get; }
-        public Class(Token Nombre, Expresion.ExpresionVariable Superclass, List<Declaracion.Funcion> Metodos)
+        public override bool Semantica()
         {
-            this.Nombre = Nombre;
-            this.Superclass = Superclass;
-            this.Metodos = Metodos;
+            bool noHayErrores = true;
+            foreach(var var in declaraciones)
+            {
+                try{
+                    if(!var.Semantica()) 
+                    {
+                        noHayErrores = false;
+                        throw new Exception("Declaracion incorrecta");
+                    }
+                }
+                catch{
+
+                }
+            }
+
+            return noHayErrores;
         }
 
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarClassDecl(this);
-        }
-
-        internal override void Aceptar(Interprete interprete)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 
     public class Expression : Declaracion
@@ -74,6 +105,47 @@ public abstract class Declaracion : claseMadre
         internal override void Aceptar(Interprete interprete)
         {
             throw new NotImplementedException();
+        }
+
+        public override bool Semantica()
+        {
+            bool noHayErrores = true; 
+            if(ExpressionValue.Semantica()) 
+            {
+                noHayErrores = false;
+                throw new Exception("La expresion tiene errores");
+            }
+            return noHayErrores;
+        }
+    }
+    public class For : Declaracion
+    {
+        public Token var;
+        public Expresion Colection;
+        public Bloque body;
+        public For(Token var, Expresion Colection, Bloque body)
+        {
+            this.var = var;
+            this.body = body;
+            this.Colection = Colection;
+        }
+        public override T Aceptar<T>(IVisitor<T> visitante)
+        {
+            return visitante.VisitarForDecl(this);        
+        }
+
+        public override bool Semantica()
+        {
+            //Me falta comprobar colection
+            bool noHayErrores = true;
+            noHayErrores = body.Semantica();
+
+            return noHayErrores;
+        }
+
+        internal override void Aceptar(Interprete interprete)
+        {
+             throw new NotImplementedException();
         }
     }
 
@@ -98,46 +170,8 @@ public abstract class Declaracion : claseMadre
         {
             throw new NotImplementedException();
         }
-    }
 
-    public class If : Declaracion
-    {
-        public Expresion Condicion { get; }
-        public Declaracion Ejecucion { get; }
-        public Declaracion Else { get; }
-        public If(Expresion Condicion, Declaracion Ejecucion, Declaracion Else)
-        {
-            this.Condicion = Condicion;
-            this.Ejecucion = Ejecucion;
-            this.Else = Else;
-        }
-
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarIfDecl(this);
-        }
-
-        internal override void Aceptar(Interprete interprete)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class Print : Declaracion
-    {
-        public Expresion Expresion { get; }
-
-        public Print(Expresion Expresion)
-        {
-            this.Expresion = Expresion;
-        }
-
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarPrintDecl(this);
-        }
-
-        internal override void Aceptar(Interprete interprete)
+        public override bool Semantica()
         {
             throw new NotImplementedException();
         }
@@ -162,6 +196,11 @@ public abstract class Declaracion : claseMadre
         {
             throw new NotImplementedException();
         }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Var : Declaracion
@@ -178,6 +217,11 @@ public abstract class Declaracion : claseMadre
         }
 
         internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Semantica()
         {
             throw new NotImplementedException();
         }
@@ -205,8 +249,73 @@ public abstract class Declaracion : claseMadre
         {
             throw new NotImplementedException();
         }
+
+        public override bool Semantica()
+        {
+            bool hayError = true;
+
+            hayError = Cuerpo.Semantica();
+
+            
+
+            return hayError;
+        }
     }
 
 
     public abstract T Aceptar<T>(IVisitor<T> visitante);
+
+     /*public class If : Declaracion
+    {
+        public Expresion Condicion { get; }
+        public Declaracion Ejecucion { get; }
+        public Declaracion Else { get; }
+        public If(Expresion Condicion, Declaracion Ejecucion, Declaracion Else)
+        {
+            this.Condicion = Condicion;
+            this.Ejecucion = Ejecucion;
+            this.Else = Else;
+        }
+
+        public override T Aceptar<T>(IVisitor<T> visitante)
+        {
+            return visitante.VisitarIfDecl(this);
+        }
+
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
+     public class Print : Declaracion
+    {
+        public Expresion Expresion { get; }
+
+        public Print(Expresion Expresion)
+        {
+            this.Expresion = Expresion;
+        }
+
+        public override T Aceptar<T>(IVisitor<T> visitante)
+        {
+            return visitante.VisitarPrintDecl(this);
+        }
+
+        internal override void Aceptar(Interprete interprete)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+    }
+*/
 }

@@ -2,9 +2,11 @@ using System.Security.Cryptography.X509Certificates;
 
 public class Effect: claseMadre
 {
+    public static Dictionary<string, Effect> efectosGuardados;
     private Expresion.ExpresionLiteral name;
     public Declaracion Action;
     private Dictionary<string, Tipo> Params;
+    Entorno entorno;
 
     public Effect(Expresion.ExpresionLiteral name, Declaracion Action, List<(Token, Token)> Params)
     {
@@ -29,16 +31,34 @@ public class Effect: claseMadre
         }
     }
 
-    public bool SemanticaIncorrecta()
+    public override bool Semantica()
     {
-        bool hayError = false;
+        bool noHayErrores = true;
 
-        if (!(name.Type is Tipo.Cadena)) hayError = true;
-        return hayError;
+        if (!(name.Type is Tipo.Cadena)) 
+        {
+            noHayErrores = false;
+            System.Console.WriteLine("Tipo de nombre invalido");
+        }
+        else{
+            string nombre = Convert.ToString(name.Evaluar());
+
+            if(!efectosGuardados.ContainsKey(nombre)) efectosGuardados.Add(nombre, this);
+            else throw new Exception("efecto ya guardado anteriormente");
+        }
+
+        if(!Action.Semantica())
+        {
+            noHayErrores = false;
+            System.Console.WriteLine("Cuerpo de efecto invalido");
+        }
+        return noHayErrores;
     }
 
     internal override void Aceptar(Interprete interprete)
     {
         throw new NotImplementedException();
     }
+
+
 }

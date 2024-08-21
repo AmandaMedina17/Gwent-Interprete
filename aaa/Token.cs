@@ -29,13 +29,13 @@ public enum TokenType {
 
     // Tokens de uno o doscaracteres. 
     Bang, Bang_igual, Igual, Igual_igual, Mayor, Mayor_igual, Menor, Menor_igual, Slach,
-    Mas_mas, Concatenacion, Concatenacion_Espaciado, Lambda, 
+    Mas_mas, Menos_menos, Concatenacion, Concatenacion_Espaciado, Lambda, Aumentar, Disminuir,
 
     // Literales.
     Identificador, Cadena, Número,
 
     // Palabras clave.
-    And, Class, Else, False, For, If, Or, Return, True, Var, While, Fun, Print,
+    And, Class, Else, False, For, If, Or, Return, True, Var, While, Fun, Print, In, 
 
     Effect, Name, Params, Amount, Action, Card, Type, Faction, Power, Range, OnActivation, Selector, 
     Source, Single, Predicate, PosAction, Effect_card, Targets, Context,

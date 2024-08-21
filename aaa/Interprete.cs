@@ -235,10 +235,31 @@ public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<obje
 
     }
 
-    public object VisitarClassDecl(Declaracion.Class Decl)
+    public object VisitarForDecl(Declaracion.For Decl)
     {
-        throw new NotImplementedException();
+       
+
+     IEnumerator<object> colection;
+            try
+            {
+                colection = ((IEnumerable<object>)Decl.Colection).GetEnumerator();
+            }
+            catch (InvalidCastException)
+            {
+                throw new Exception("error");
+            }
+
+            if (entorno.Valores.ContainsKey(Decl.var.Valor)) throw new Exception("Variable ya defiinida anteriormente");
+
+            while (colection.MoveNext())
+            {
+                entorno.Get(Decl.var);
+                if(Decl.body is Declaracion.Bloque) VisitarBloqueDecl(Decl.body);
+            }
+
+    return null;
     }
+
 
     public object VisitarExpresionDecl(Declaracion.Expression Decl)
     {
@@ -252,26 +273,6 @@ public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<obje
         throw new NotImplementedException();
     }
 
-    public object VisitarIfDecl(Declaracion.If Decl)
-    {
-        if (esVerdad(evaluar(Decl.Condicion))) 
-        {
-            Ejecutar(Decl.Ejecucion);
-        } else if (Decl.Else != null) 
-        {
-            Ejecutar(Decl.Else);
-        }
-        return null;
-
-    }
-
-    public object VisitarPrintDecl(Declaracion.Print Decl)
-    {
-        object valor = evaluar(Decl.Expresion);
-        Console.WriteLine(encadenar(valor));
-        return null;
-
-    }
 
     public object VisitarReturnDecl(Declaracion.Return Decl)
     {
@@ -289,6 +290,27 @@ public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<obje
         entorno.define(Decl.Nombre.Valor, valor);
         return null;
 
+    }
+
+    public object VisitarIncYDec(Declaracion.IncYDec Decl)
+    {
+        if(Decl.operador.Tipo == TokenType.Aumentar) 
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], Decl.valor,new Token(TokenType.Más, "+", null, 0)));
+        }
+        if(Decl.operador.Tipo == TokenType.Disminuir) 
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], Decl.valor,new Token(TokenType.Menos, "-", null, 0)));
+        }
+        if(Decl.operador.Tipo == TokenType.Mas_mas)  
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Más, "+", null, 0)));
+        }
+        if(Decl.operador.Tipo == TokenType.Menos_menos)  
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Menos, "-", null, 0)));
+        }
+        return null;
     }
 
     public object VisitarWhileDecl(Declaracion.While Decl)

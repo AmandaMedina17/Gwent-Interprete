@@ -1,12 +1,14 @@
 using System.Linq.Expressions;
 using System.Text.Json;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 class Parser
 {
     public class ParseError : Exception{}  //Para analizar errores durante el analisis
     public List<Token> tokens;  // Una lista que almacena los tokens generados por el escáner
     public int Current = 0;  //Un índice que apunta al token actual durante el análisis
+    Token True = new Token(TokenType.True, "true", true, 0);
 
     public Parser(List<Token> tokens)
     {
@@ -233,18 +235,18 @@ class Parser
     //primario → NUMBER | STRING | "true" | "false" | "null"| "(" expresión ")"
     public Expresion primario() 
     {
-        if (coincide(TokenType.False)) return new Expresion.ExpresionLiteral(false, Tipo.Bool); 
-        if (coincide(TokenType.True)) return new Expresion.ExpresionLiteral(true, Tipo.Bool); 
+        if (coincide(TokenType.False)) return new Expresion.ExpresionLiteral(anterior(), Tipo.Bool); 
+        if (coincide(TokenType.True)) return new Expresion.ExpresionLiteral(anterior(), Tipo.Bool); 
         if (coincide(TokenType.Null)) return new Expresion.ExpresionLiteral(null, Tipo.nil);
         
         if (coincide(TokenType.Número)) 
         {
-            return new Expresion.ExpresionLiteral(anterior().Literal, Tipo.Numero);
+            return new Expresion.ExpresionLiteral(anterior(), Tipo.Numero);
         }
 
         if(coincide(TokenType.Cadena))
         {
-            return new Expresion.ExpresionLiteral(anterior().Literal, Tipo.Cadena);
+            return new Expresion.ExpresionLiteral(anterior(), Tipo.Cadena);
 
         }
 
@@ -302,19 +304,19 @@ class Parser
     public Declaracion declaracion() //Analiza diferentes tipos de declaraciones
     {
         if (coincide(TokenType.For)) return forDeclaracion();
-        if (coincide(TokenType.Print)) return ImprimirDeclaracion();
+        // if (coincide(TokenType.Print)) return ImprimirDeclaracion();
         if (coincide(TokenType.While)) return whileDeclaracion();
         
 
         return ExpresionDeclaracion();
     }
 
-    public Declaracion ImprimirDeclaracion()
-    {
-        Expresion value = expresion();
-        consume(TokenType.Punto_y_coma, "Se esperaba ;");
-        return new Declaracion.Print(value);
-    }
+    // public Declaracion ImprimirDeclaracion()
+    // {
+    //     Expresion value = expresion();
+    //     consume(TokenType.Punto_y_coma, "Se esperaba ;");
+    //     return new Declaracion.Print(value);
+    // }
 
     public Declaracion ExpresionDeclaracion()
     {
@@ -329,7 +331,21 @@ class Parser
     {
         try 
         {
-            if (verifica(TokenType.Identificador)) return varDeclaracion();
+            if (verifica(TokenType.Identificador)) 
+            {
+                Token nombre = consume(TokenType.Identificador, "Expect variable name.");
+
+                if(verifica(TokenType.Igual))
+                {
+                    return varDeclaracion(nombre);
+                }
+                else 
+                {
+                    Token operador = avanza();
+                    Expresion valor = expresion();
+                    return new Declaracion.IncYDec(nombre, operador, valor);
+                }
+            }
 
             return declaracion();
         } 
@@ -340,9 +356,9 @@ class Parser
         }
     }   
 
-    public Declaracion varDeclaracion() 
+    public Declaracion varDeclaracion(Token nombre) 
     {
-        Token nombre = consume(TokenType.Identificador, "Expect variable name.");
+        
 
         Expresion inicializador = null;
         if (coincide(TokenType.Igual)) {
@@ -382,50 +398,18 @@ class Parser
 
     public Declaracion forDeclaracion() 
     {
-        consume(TokenType.Parentesis_abierto, "Se esperaba ( despues de for");
+        Token Variable = null;
+        if(coincide(TokenType.Identificador)) Variable = anterior();
+        else error(mira(), "Variable no declarada");
 
-        Declaracion inicializador;
-        if (coincide(TokenType.Punto_y_coma)) 
-        {
-            inicializador = null;
-        } 
-        else if (coincide(TokenType.Var)) 
-        {
-            inicializador = varDeclaracion();
-        } 
-        else 
-        {
-            inicializador = ExpresionDeclaracion();
-        }
+        if(!coincide(TokenType.In)) error(mira(), "Se esperaba la palabra reservada 'in'");
 
-        Expresion condicion = null;
-        if (!verifica(TokenType.Punto_y_coma)) {
-        condicion = expresion();
-        }
-        consume(TokenType.Punto_y_coma, "Se esperaba ; despues de condicion de bucle");
+        Expresion Colection = expresion();
+        Declaracion.Bloque body = null;
 
-        Expresion incremento = null;
-        if (!verifica(TokenType.Parentesis_cerrado)) {
-        incremento = expresion();
-        }
-        consume(TokenType.Parentesis_cerrado, "Se esperaba ) despues de las clausulas for");
-
-        Declaracion cuerpo = declaracion();
-
-        if (incremento != null) 
-        {
-            cuerpo = new Declaracion.Bloque(new List<claseMadre>{cuerpo, new Declaracion.Expression(incremento)});
-        }
-
-        if (condicion == null) condicion = new Expresion.ExpresionLiteral(true, Tipo.Bool);
-        cuerpo = new Declaracion.While(condicion, cuerpo);
-
-        if (inicializador != null) 
-        {
-            cuerpo = new Declaracion.Bloque(new List<claseMadre>{inicializador, cuerpo});
-        }
-
-        return cuerpo;
+        if(coincide(TokenType.Llave_abierta)) body = new Declaracion.Bloque(bloque());
+        
+        return new Declaracion.For(Variable, Colection, body);
         
     }
 
@@ -534,6 +518,7 @@ class Parser
                         }
                         consume(TokenType.Lambda, "'=>' expected");
                         if(coincide(TokenType.Llave_abierta)) Action = new Declaracion.Bloque(bloque());
+                        else Action = declara();
                         if(Action == null) error(mira(), "Body action is expected");
                     }
                     else error(mira(), "Two points expected");

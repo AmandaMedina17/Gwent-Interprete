@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 
 public abstract class Expresion
 {
+    public abstract Tipo type();
     public interface IVisitante<T>
     {
         T visitarAsignacionExpresion(AsignarExpresion obj);
@@ -17,7 +18,7 @@ public abstract class Expresion
         T visitarExpresionVariable(ExpresionVariable obj);
 
     }
-
+    public abstract bool Semantica();
     public abstract T Aceptar<T>(IVisitante<T> visitante);
 
     public class AsignarExpresion : Expresion
@@ -35,10 +36,21 @@ public abstract class Expresion
         {
             return visitante.visitarAsignacionExpresion(this);
         }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class ExpresionBinaria : Expresion
     {
+        static List<string> operacionesDisponibles = new List<string> { "+", "-", "*", "/", "^", "||", "&&", "<", ">", "<=", ">=", "==", "!=", "@", "@@"};
         public Expresion izquierda;
         public Expresion derecha;
         public Token operador;
@@ -53,6 +65,38 @@ public abstract class Expresion
         public override T Aceptar<T>(IVisitante<T> visitante)
         {
             return visitante.visitarExpresionBinaria(this);
+        }
+
+        public override bool Semantica()
+        {
+            bool noHayErrores = true;
+
+            if(!operacionesDisponibles.Contains(operador.Valor))
+            {
+                noHayErrores = false;
+                System.Console.WriteLine("Operador invalido");
+            }
+            if((!(izquierda.type() is Tipo.Numero) && !(derecha.type() is Tipo.Numero)) || (!(izquierda.type() is Tipo.Cadena) && !(derecha.type() is Tipo.Cadena)) || (!(izquierda.type() is Tipo.Bool) && !(derecha.type() is Tipo.Bool)))
+            {
+                noHayErrores = false;
+                System.Console.WriteLine("Expresion derecha e izquierda no coincidentes");
+            }
+
+            return noHayErrores;
+        }
+
+        public override Tipo type()
+        {
+            if((izquierda.type() is Tipo.Numero) && (derecha.type() is Tipo.Numero)) 
+            {
+                if(operador.Tipo == TokenType.Más || operador.Tipo == TokenType.Menos || operador.Tipo == TokenType.Slach || operador.Tipo == TokenType.Asterizco)return Tipo.Numero;
+                else return Tipo.Bool;
+            }
+            else if((izquierda.type() is Tipo.Cadena) && (derecha.type() is Tipo.Cadena)) return Tipo.Cadena;
+            else if((izquierda.type() is Tipo.Bool) && (derecha.type() is Tipo.Bool)) return Tipo.Bool;
+            else throw new Exception("Expresion binaria mal");
+
+
         }
     }
 
@@ -73,6 +117,16 @@ public abstract class Expresion
         {
             return visitante.visitarLlamarExpresion(this);
         }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     //Obtener expresion
@@ -91,6 +145,16 @@ public abstract class Expresion
         {
             return visitante.visitarGetExpresion(this);
         }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     //Expresion de agrupacion
@@ -107,19 +171,41 @@ public abstract class Expresion
         {
             return visitante.visitarExpresionAgrupacion(this);
         }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     //Expresion Literal
     public class ExpresionLiteral : Expresion
     {
-        public object valor;
+        public Token valor;
         public Tipo Type;
 
-        public ExpresionLiteral(object valor, Tipo Type)
+        public ExpresionLiteral(Token valor, Tipo Type)
         {
             this.valor = valor;
             this.Type = Type;
         
+        }
+
+        public object Evaluar()
+        {
+            switch(valor.Tipo)
+            {
+                case TokenType.Número: return Convert.ToDouble(valor);
+                case TokenType.Cadena: return valor.Valor.Substring(1, valor.Valor.Length - 2);
+                case TokenType.True : return true;
+                case TokenType.False: return false;
+                default: throw new Exception("Valor no esperado");
+            }
         }
 
         public override T Aceptar<T>(IVisitante<T> visitante)
@@ -127,6 +213,15 @@ public abstract class Expresion
             return visitante.visitarExpresionLiteral(this);
         }
 
+        public override bool Semantica()
+        {
+            return true;
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     //Expresion Logica
@@ -146,6 +241,19 @@ public abstract class Expresion
         public override T Aceptar<T>(IVisitante<T> visitante)
         {
             return visitante.visitarExpresionLogica(this);
+        }
+
+        public override bool Semantica()
+        {
+            bool noHayErrores = true;
+            if(!(izquierda.type() == Tipo.Bool) && !(derecha.type() == Tipo.Bool)) noHayErrores = false;
+            return noHayErrores;
+        }
+
+        public override Tipo type()
+        {
+            if((izquierda.type() is Tipo.Cadena) && (derecha.type() is Tipo.Cadena)) return Tipo.Cadena;
+            else throw new Exception("La expresion izquierda y la derecha no son ambas de tipo bool");
         }
     }
 
@@ -167,6 +275,16 @@ public abstract class Expresion
         {
             return visitante.visitarSetExpresion(this);
         }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     //Super Expresion
@@ -185,11 +303,22 @@ public abstract class Expresion
         {
             return visitante.visitarSuperExpresion(this);
         }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    //Esta Expresion
+    //Expresion Unaria
     public class ExpresionUnaria : Expresion
     {
+        static List<string> operadoresDisponibles = new() { "-", "!"};
         public Token operador;
         public Expresion derecha;
 
@@ -202,6 +331,31 @@ public abstract class Expresion
         public override T Aceptar<T>(IVisitante<T> visitante)
         {
             return visitante.visitarExpresionUnaria(this);
+        }
+
+        public override bool Semantica()
+        {
+            bool noHayErrores = true;
+
+            if(!(derecha.type() is Tipo.Bool) && !(derecha.type() is Tipo.Numero))
+            {
+                System.Console.WriteLine("Expresion derecha de tipo no esperado");
+                noHayErrores = false;
+            }
+
+            if(!operadoresDisponibles.Contains(operador.Valor)) 
+            {
+                System.Console.WriteLine("Operador unario invalido");
+                noHayErrores = false;
+            }
+
+            return noHayErrores;
+
+        }
+
+        public override Tipo type()
+        {
+            return derecha.type();
         }
     }
 
@@ -218,6 +372,16 @@ public abstract class Expresion
         public override T Aceptar<T>(IVisitante<T> visitante)
         {
             return visitante.visitarExpresionVariable(this);
+        }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
         }
     }
 

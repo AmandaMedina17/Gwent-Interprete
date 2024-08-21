@@ -53,7 +53,6 @@ public class Escaner
         case ']': addToken(TokenType.Corchete_Cerrado); break;
         case ',': addToken(TokenType.Coma); break;
         case '.': addToken(TokenType.Punto); break;
-        case '-': addToken(TokenType.Menos); break;
         case ';': addToken(TokenType.Punto_y_coma); break;
         case '*': addToken(TokenType.Asterizco); break;
         case ':': addToken(TokenType.Doble_punto); break;
@@ -62,14 +61,18 @@ public class Escaner
         case '!': addToken(match('=') ? TokenType.Bang_igual : TokenType.Bang); break;
         case '<': addToken(match('=') ? TokenType.Menor_igual : TokenType.Menor); break;
         case '>': addToken(match('=') ? TokenType.Mayor_igual : TokenType.Mayor); break;
-        case '+': addToken(match('+') ? TokenType.Mas_mas : TokenType.Más); break;
         case '&': addToken(match('&') ? TokenType.And : throw new ArgumentException(linea + " caracter inesperado")); break;
         case '|': addToken(match('|') ? TokenType.Or : throw new ArgumentException(linea + " caracter inesperado")); break;
         case '@': addToken(match('@') ? TokenType.Concatenacion_Espaciado : TokenType.Concatenacion); break;
         case '=': if(match('=')) addToken(TokenType.Igual_igual);
                     else if(match('>')) addToken(TokenType.Lambda);
                     else addToken(TokenType.Igual); break;
-
+        case '+': if(match('+')) addToken(TokenType.Mas_mas);
+                    else if(match('=')) addToken(TokenType.Aumentar);
+                    else addToken(TokenType.Más); break;
+        case '-': if(match('-')) addToken(TokenType.Menos_menos);
+                    else if(match('=')) addToken(TokenType.Disminuir);
+                    else addToken(TokenType.Menos); break;
 
         case '/':
             if (match('/')) 
@@ -257,6 +260,8 @@ public class Escaner
         keywords.Add("Print", TokenType.Print);
         keywords.Add("targets", TokenType.Targets);
         keywords.Add("context", TokenType.Context);
+        keywords.Add("in", TokenType.In);
+
 
 
 

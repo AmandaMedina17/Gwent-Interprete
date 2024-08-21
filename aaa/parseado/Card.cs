@@ -31,6 +31,11 @@ public class Card : claseMadre
 
         return hayError;
     }
+
+    public override bool Semantica()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public enum Type
