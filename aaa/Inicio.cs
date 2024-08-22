@@ -2,7 +2,6 @@ using System.Text;
 
 public class Inicio {
 
-    private static Interprete interprete = new Interprete();
     public static bool hadError = false;
     static bool hadRuntimeError = false;
     public static void Main(String[] args) 
@@ -55,7 +54,6 @@ public class Inicio {
         Parser parser = new Parser(tokens);
         List<claseMadre> cartas = parser.parse();
         if (hadError) return;
-        interprete.Interpretar(cartas);
 
     }
 

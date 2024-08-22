@@ -8,6 +8,13 @@ public class Player
     public bool CanPlay = false;
     public ZonasdelTablero zonasdelplayer;
     public Context contexto;
+    public bool turnoPasado = false;
+    
+    private static Player _griegos;
+    private static Player _nordicos;
+
+    public static Player Griegos => _griegos ??= CrearJugador(Faction.Greek_Gods);
+    public static Player Nordicos => _nordicos ??= CrearJugador(Faction.Nordic_Gods);
 
     public Player(Faction a)
     {
@@ -17,4 +24,13 @@ public class Player
 
     }
 
+    public static Player CrearJugador(Faction faction)
+    {
+        Player player = new Player(faction);
+        Player enemy = faction == Faction.Nordic_Gods ? Griegos:Nordicos;
+        player.contexto = new Context(player, enemy);
+        player.zonasdelplayer = new ZonasdelTablero();
+        
+        return player;
+    }
 }

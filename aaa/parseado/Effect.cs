@@ -6,13 +6,19 @@ public class Effect: claseMadre
     private Expresion.ExpresionLiteral name;
     public Declaracion Action;
     private Dictionary<string, Tipo> Params;
+    private Token Context;
+    private Token Targets;
+    private bool ParametrosAndTargets = false;
     Entorno entorno;
 
-    public Effect(Expresion.ExpresionLiteral name, Declaracion Action, List<(Token, Token)> Params)
+    public Effect(Expresion.ExpresionLiteral name, Declaracion Action, List<(Token, Token)> Params, Token Targets, Token Context)
     {
         this.name = name;
         this.Action = Action;
         this.Params = new Dictionary<string, Tipo>();
+        this.Targets = Targets is null ? new Token(TokenType.Identificador, "targets", null, 0) : Targets;
+        this.Context = Context is null ? new Token(TokenType.Identificador, "context", null, 0) : Context;
+
 
         foreach(var dupla in Params)
         {
@@ -38,27 +44,32 @@ public class Effect: claseMadre
         if (!(name.Type is Tipo.Cadena)) 
         {
             noHayErrores = false;
-            System.Console.WriteLine("Tipo de nombre invalido");
+            System.Console.WriteLine("Invalid effect name type.");
         }
         else{
-            string nombre = Convert.ToString(name.Evaluar());
+            string nombre = Convert.ToString(name.Ejecutar());
 
             if(!efectosGuardados.ContainsKey(nombre)) efectosGuardados.Add(nombre, this);
-            else throw new Exception("efecto ya guardado anteriormente");
+            else throw new Exception("Previously saved effect.");
         }
 
         if(!Action.Semantica())
         {
             noHayErrores = false;
-            System.Console.WriteLine("Cuerpo de efecto invalido");
+            System.Console.WriteLine("Invalid effect body.");
         }
         return noHayErrores;
     }
 
-    internal override void Aceptar(Interprete interprete)
+   
+
+    public override void Ejecutar()
     {
-        throw new NotImplementedException();
+        Action.Ejecutar();
     }
 
-
+    // public void TargetsAndParametros(List<(Token, Expresion)> parametros, Expresion targets)
+    // {
+    //     if(!(this.Context.Valor == "context")) entorno.asignar(this.Context, ) 
+    // }
 }

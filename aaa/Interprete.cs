@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<object>
+/*public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<object>
 {
     private Entorno entorno = new Entorno();  // Es una estructura que mantiene las variables y sus valores actuales. Actúa como un contexto de ejecución para las expresiones y cards
     
@@ -147,9 +147,9 @@ public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<obje
     { 
         try 
         {
-            foreach (claseMadre card in cards)
+            foreach (claseMadre objetcs in cards)
              {
-                Ejecutar(card); 
+                Ejecutar(objetcs); 
             }       
         } 
         catch (RuntimeError error) 
@@ -323,4 +323,4 @@ public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<obje
     }
 
     
-}
+}*/

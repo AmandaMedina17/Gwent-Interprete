@@ -479,8 +479,8 @@ class Parser
     { 
         Expresion.ExpresionLiteral name = null;
         Declaracion Action = null;
-        Token targets;
-        Token context;
+        Token targets = null;
+        Token context = null;
         List<(Token, Token)> parametros = new List<(Token, Token)>();
 
         do{
@@ -534,7 +534,7 @@ class Parser
         if(name == null) throw new Exception("Efecto sin nombre");
         if(Action == null) throw new Exception("Efecto sin action");
 
-        return new Effect(name, Action, parametros);
+        return new Effect(name, Action, parametros, targets, context);
     }
 
     public Expresion.ExpresionLiteral AsignarExpresion(bool estado)

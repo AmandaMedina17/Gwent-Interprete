@@ -1,4 +1,4 @@
-class Entorno
+public class Entorno
 {
     private Entorno encerrando;
     public Dictionary<string, object> Valores = new Dictionary<string, object>();

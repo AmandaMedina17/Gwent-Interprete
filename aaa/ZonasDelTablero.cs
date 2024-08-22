@@ -10,3 +10,8 @@ public class ZonasdelTablero
     
 
 }
+
+public enum Zonas
+{
+    Melee, Range, Siege,
+}

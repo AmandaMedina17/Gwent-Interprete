@@ -1,18 +1,17 @@
 public abstract class Declaracion : claseMadre
 {
-    public new interface IVisitor<T>
-    {
-        T VisitarForDecl(For Decl);
-        T VisitarBloqueDecl(Bloque Decl);
-        T VisitarExpresionDecl(Expression Decl);
-        T VisitarFuncionDecl(Funcion Decl);
-        T VisitarReturnDecl(Return Decl);
-        T VisitarVarDecl(Var Decl);
-        T VisitarWhileDecl(While Decl);
-        T VisitarIncYDec(IncYDec Decl);
-    }
-
-
+    public Entorno entorno = new Entorno();
+    // public new interface IVisitor<T>
+    // {
+    //     T VisitarForDecl(For Decl);
+    //     T VisitarBloqueDecl(Bloque Decl);
+    //     T VisitarExpresionDecl(Expression Decl);
+    //     T VisitarFuncionDecl(Funcion Decl);
+    //     T VisitarReturnDecl(Return Decl);
+    //     T VisitarVarDecl(Var Decl);
+    //     T VisitarWhileDecl(While Decl);
+    //     T VisitarIncYDec(IncYDec Decl);
+    // }
 
     public class IncYDec : Declaracion
     {
@@ -26,13 +25,34 @@ public abstract class Declaracion : claseMadre
             this.operador = operador;
             this.valor = valor;
         }
-        public override T Aceptar<T>(IVisitor<T> visitante)
+
+        public override void Ejecutar()
         {
-            throw new NotImplementedException();
+             if(operador.Tipo == TokenType.Aumentar) 
+            {
+                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], valor,new Token(TokenType.Más, "+", null, 0)));
+            }
+            if(operador.Tipo == TokenType.Disminuir) 
+            {
+                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], valor,new Token(TokenType.Menos, "-", null, 0)));
+            }
+            if(operador.Tipo == TokenType.Mas_mas)  
+            {
+                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Más, "+", null, 0)));
+            }
+            if(operador.Tipo == TokenType.Menos_menos)  
+            {
+                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Menos, "-", null, 0)));
+            }
         }
 
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     throw new NotImplementedException();
+        // }
+
         public override bool Semantica()
-        {
+        {        
             if(!(valor is null) && !valor.Semantica())
             {
                 return false;
@@ -41,10 +61,7 @@ public abstract class Declaracion : claseMadre
             return true;
         }
 
-        internal override void Aceptar(Interprete interprete)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
     public class Bloque : Declaracion
     {
@@ -55,15 +72,12 @@ public abstract class Declaracion : claseMadre
             this.declaraciones = declaraciones;
         }
 
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarBloqueDecl(this);
-        }
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     return visitante.VisitarBloqueDecl(this);
+        // }
 
-        internal override void Aceptar(Interprete interprete)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public override bool Semantica()
         {
@@ -74,7 +88,7 @@ public abstract class Declaracion : claseMadre
                     if(!var.Semantica()) 
                     {
                         noHayErrores = false;
-                        throw new Exception("Declaracion incorrecta");
+                        throw new Exception("Invalid declaration contained in the block.");
                     }
                 }
                 catch{
@@ -85,7 +99,13 @@ public abstract class Declaracion : claseMadre
             return noHayErrores;
         }
 
-        
+        public override void Ejecutar()
+        {
+            foreach(var objecto in declaraciones)
+            {
+                objecto.Ejecutar();
+            }
+        }
     }
 
     public class Expression : Declaracion
@@ -97,25 +117,25 @@ public abstract class Declaracion : claseMadre
             ExpressionValue = expression;
         }
 
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarExpresionDecl(this);
-        }
-
-        internal override void Aceptar(Interprete interprete)
-        {
-            throw new NotImplementedException();
-        }
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     return visitante.VisitarExpresionDecl(this);
+        // }
 
         public override bool Semantica()
         {
             bool noHayErrores = true; 
-            if(ExpressionValue.Semantica()) 
+            if(!ExpressionValue.Semantica()) 
             {
                 noHayErrores = false;
-                throw new Exception("La expresion tiene errores");
+                throw new Exception("The expression is invalid.");
             }
             return noHayErrores;
+        }
+
+        public override void Ejecutar()
+        {
+            ExpressionValue.Ejecutar();
         }
     }
     public class For : Declaracion
@@ -129,10 +149,33 @@ public abstract class Declaracion : claseMadre
             this.body = body;
             this.Colection = Colection;
         }
-        public override T Aceptar<T>(IVisitor<T> visitante)
+
+        public override void Ejecutar()
         {
-            return visitante.VisitarForDecl(this);        
+             IEnumerator<object> colection;
+            try
+            {
+                colection = ((IEnumerable<object>)Colection).GetEnumerator();
+            }
+            catch (InvalidCastException)
+            {
+                throw new Exception("error");
+            }
+
+            if (entorno.Valores.ContainsKey(var.Valor)) throw new Exception("Variable already defined previously.");
+
+            while (colection.MoveNext())
+            {
+                entorno.Get(var);
+                if(body is Bloque) body.Ejecutar();
+            }
+
         }
+
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     return visitante.VisitarForDecl(this);        
+        // }
 
         public override bool Semantica()
         {
@@ -143,10 +186,7 @@ public abstract class Declaracion : claseMadre
             return noHayErrores;
         }
 
-        internal override void Aceptar(Interprete interprete)
-        {
-             throw new NotImplementedException();
-        }
+
     }
 
     public class Funcion : Declaracion
@@ -161,17 +201,19 @@ public abstract class Declaracion : claseMadre
             this.Cuerpo = Cuerpo;
         }
 
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarFuncionDecl(this);
-        }
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     return visitante.VisitarFuncionDecl(this);
+        // }
 
-        internal override void Aceptar(Interprete interprete)
+
+
+        public override bool Semantica()
         {
             throw new NotImplementedException();
         }
 
-        public override bool Semantica()
+        public override void Ejecutar()
         {
             throw new NotImplementedException();
         }
@@ -187,17 +229,17 @@ public abstract class Declaracion : claseMadre
             this.Valor = Valor;
         }
 
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarReturnDecl(this);
-        }
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     return visitante.VisitarReturnDecl(this);
+        // }
 
-        internal override void Aceptar(Interprete interprete)
+        public override bool Semantica()
         {
             throw new NotImplementedException();
         }
 
-        public override bool Semantica()
+        public override void Ejecutar()
         {
             throw new NotImplementedException();
         }
@@ -211,19 +253,31 @@ public abstract class Declaracion : claseMadre
             this.Inicializador = Inicializador;
         }
 
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarVarDecl(this);
-        }
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     return visitante.VisitarVarDecl(this);
+        // }
 
-        internal override void Aceptar(Interprete interprete)
-        {
-            throw new NotImplementedException();
-        }
 
         public override bool Semantica()
         {
-            throw new NotImplementedException();
+            if(!(Inicializador is null) && !Inicializador.Semantica())
+            {
+                return false;
+            }
+           
+            return true;
+        }
+
+        public override void Ejecutar()
+        {
+            object valor = null;
+            if (Inicializador != null) 
+            {
+                valor = Inicializador.Ejecutar();
+            }
+
+            entorno.define(Nombre.Valor, valor);
         }
 
         public Token Nombre { get; }
@@ -240,30 +294,46 @@ public abstract class Declaracion : claseMadre
             this.Cuerpo = Cuerpo;
         }
 
-        public override T Aceptar<T>(IVisitor<T> visitante)
-        {
-            return visitante.VisitarWhileDecl(this);
-        }
+        // public override T Aceptar<T>(IVisitor<T> visitante)
+        // {
+        //     return visitante.VisitarWhileDecl(this);
+        // }
 
-        internal override void Aceptar(Interprete interprete)
-        {
-            throw new NotImplementedException();
-        }
 
         public override bool Semantica()
         {
-            bool hayError = true;
+            bool noHayErrores = true;
 
-            hayError = Cuerpo.Semantica();
+            if(!(Condicion.type() is Tipo.Bool) || !Condicion.Semantica())
+            {
+                System.Console.WriteLine("Invalid while condition.");
+                return false;
+            }
+            noHayErrores = Cuerpo.Semantica();
 
             
 
-            return hayError;
+            return noHayErrores;
+        }
+
+        public override void Ejecutar()
+        {
+            while (esVerdad(Condicion.Ejecutar())) 
+        {
+            Cuerpo.Ejecutar();
+        }
+        }
+
+         private bool esVerdad(object obj) //Determina si un objeto se evalúa como verdadero
+        { 
+            if (obj == null) return false;
+            if (obj is bool boleanValue) return (bool)obj; 
+            return true;
         }
     }
 
 
-    public abstract T Aceptar<T>(IVisitor<T> visitante);
+    // public abstract T Aceptar<T>(IVisitor<T> visitante);
 
      /*public class If : Declaracion
     {

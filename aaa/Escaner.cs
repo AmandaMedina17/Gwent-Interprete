@@ -233,34 +233,33 @@ public class Escaner
    
     private void palabrasReservadas()
     {
-        keywords = new Dictionary<string, TokenType>();
-
-        keywords.Add("false", TokenType.False);
-        keywords.Add("for", TokenType.For);
-        keywords.Add("else", TokenType.Else);
-        keywords.Add("return", TokenType.Return);
-        keywords.Add("true", TokenType.True);
-        keywords.Add("while", TokenType.While);
-        keywords.Add("effect", TokenType.Effect);
-        keywords.Add("Name", TokenType.Name);
-        keywords.Add("Params", TokenType.Params);
-        keywords.Add("Action", TokenType.Action);
-        keywords.Add("card", TokenType.Card);
-        keywords.Add("Type", TokenType.Type);
-        keywords.Add("Faction", TokenType.Faction);
-        keywords.Add("Power", TokenType.Power);
-        keywords.Add("Range", TokenType.Range);
-        keywords.Add("OnActivation", TokenType.OnActivation);
-        keywords.Add("Efect", TokenType.Effect_card);
-        keywords.Add("Selector", TokenType.Selector);
-        keywords.Add("Source", TokenType.Source);
-        keywords.Add("Single", TokenType.Single);
-        keywords.Add("Predicate", TokenType.Predicate);
-        keywords.Add("PostAction", TokenType.PosAction);
-        keywords.Add("Print", TokenType.Print);
-        keywords.Add("targets", TokenType.Targets);
-        keywords.Add("context", TokenType.Context);
-        keywords.Add("in", TokenType.In);
+        keywords = new Dictionary<string, TokenType>
+        {
+            { "false", TokenType.False },
+            { "for", TokenType.For },
+            { "else", TokenType.Else },
+            { "return", TokenType.Return },
+            { "true", TokenType.True },
+            { "while", TokenType.While },
+            { "effect", TokenType.Effect },
+            { "Name", TokenType.Name },
+            { "Params", TokenType.Params },
+            { "Action", TokenType.Action },
+            { "card", TokenType.Card },
+            { "Type", TokenType.Type },
+            { "Faction", TokenType.Faction },
+            { "Power", TokenType.Power },
+            { "Range", TokenType.Range },
+            { "OnActivation", TokenType.OnActivation },
+            { "Efect", TokenType.Effect_card },
+            { "Selector", TokenType.Selector },
+            { "Source", TokenType.Source },
+            { "Single", TokenType.Single },
+            { "Predicate", TokenType.Predicate },
+            { "PostAction", TokenType.PosAction },
+            { "Print", TokenType.Print },
+            { "in", TokenType.In }
+        };
 
 
 

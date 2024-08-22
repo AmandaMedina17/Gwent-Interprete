@@ -15,12 +15,7 @@ public class Card : claseMadre
         this.power = power;
         this.range = range;
     }
-
-    internal override void Aceptar(Interprete interprete)
-    {
-        throw new NotImplementedException();
-    }
-
+ 
     public bool SemanticaIncorrecta()
     {
         bool hayError = false;
@@ -36,6 +31,11 @@ public class Card : claseMadre
     {
         throw new NotImplementedException();
     }
+
+    public override void Ejecutar()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public enum Type
@@ -45,4 +45,15 @@ public enum Type
 public enum Range
 {
     Melee, Ranged, Siege, 
+}
+
+
+public enum Faction
+{
+    Nordic_Gods, Greek_Gods,
+}
+
+public enum TipoDeCarta
+{
+    Unit, Increase, Climate, Clearance, Leader, Bait,
 }
