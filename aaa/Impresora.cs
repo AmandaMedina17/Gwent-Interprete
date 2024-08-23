@@ -1,13 +1,9 @@
 using System.Text;
 
  
-public class AstPrinter : Expresion.IVisitante<string>
+public class AstPrinter
 {
     
-    public string Print(Expresion expr)
-    {
-        return expr.Aceptar(this);
-    }
 
     public string visitarExpresionBinaria(Expresion.ExpresionBinaria expr) 
     { 
@@ -35,7 +31,7 @@ public class AstPrinter : Expresion.IVisitante<string>
         builder.Append("(").Append(name);
         foreach(Expresion expr in expresiones) {
         builder.Append(" ");
-        builder.Append(expr.Aceptar(this));
+        
     }
         builder.Append(")");
 
@@ -43,42 +39,4 @@ public class AstPrinter : Expresion.IVisitante<string>
     }
 
 
-    string Expresion.IVisitante<string>.visitarAsignacionExpresion(Expresion.AsignarExpresion obj)
-    {
-        throw new NotImplementedException();
-    }
-
-    
-
-    string Expresion.IVisitante<string>.visitarLlamarExpresion(Expresion.LlamarExpresion obj)
-    {
-        throw new NotImplementedException();
-    }
-
-    string Expresion.IVisitante<string>.visitarGetExpresion(Expresion.GetExpresion obj)
-    {
-        throw new NotImplementedException();
-    }
-
-       string Expresion.IVisitante<string>.visitarExpresionLogica(Expresion.ExpresionLogica obj)
-    {
-        throw new NotImplementedException();
-    }
-
-    string Expresion.IVisitante<string>.visitarSetExpresion(Expresion.SetExpresion obj)
-    {
-        throw new NotImplementedException();
-    }
-
-    string Expresion.IVisitante<string>.visitarSuperExpresion(Expresion.SuperExpresion obj)
-    {
-        throw new NotImplementedException();
-    }
-
-    string Expresion.IVisitante<string>.visitarExpresionVariable(Expresion.ExpresionVariable obj)
-    {
-        throw new NotImplementedException();
-    }
-
-   
 }

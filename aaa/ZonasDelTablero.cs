@@ -7,7 +7,12 @@ public class ZonasdelTablero
     public List<Card> IncreaseMeleeZone = new List<Card>();
     public List<Card> IncreaseRangedZone = new List<Card>();
     public List<Card> IncreaseSiegeZone = new List<Card>();
-    
+    public List<List<Card>> listaDeLasZonas;
+
+    public ZonasdelTablero(Player player)
+    {
+        listaDeLasZonas = new List<List<Card>> {MeleeZone, RangedZone, SiegeZone, IncreaseMeleeZone, IncreaseRangedZone, IncreaseSiegeZone};
+    }
 
 }
 

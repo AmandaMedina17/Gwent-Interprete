@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Amanda\\aaa\\aaa.csproj": {}
+    "d:\\Amanda\\aaa\\aaa.csproj": {}
   },
   "projects": {
-    "D:\\Amanda\\aaa\\aaa.csproj": {
+    "d:\\Amanda\\aaa\\aaa.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Amanda\\aaa\\aaa.csproj",
+        "projectUniqueName": "d:\\Amanda\\aaa\\aaa.csproj",
         "projectName": "aaa",
-        "projectPath": "D:\\Amanda\\aaa\\aaa.csproj",
+        "projectPath": "d:\\Amanda\\aaa\\aaa.csproj",
         "packagesPath": "C:\\Users\\Irma\\.nuget\\packages\\",
-        "outputPath": "D:\\Amanda\\aaa\\obj\\",
+        "outputPath": "d:\\Amanda\\aaa\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Irma\\AppData\\Roaming\\NuGet\\NuGet.Config"

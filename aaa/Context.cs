@@ -1,12 +1,437 @@
+using System.Reflection.Metadata;
+
 public class Context
 {
-    public Player player;
-    public Player enemy;
+    public Tablero board;
+    public Dictionary<Faction, Player> Jugadores = new Dictionary<Faction, Player> {{Faction.Greek_Gods, Player.Griegos}, {Faction.Nordic_Gods, Player.Nordicos}};
 
-    public Context(Player player, Player enemy)
+    public Context()
     {
-        this.player = player;
-        this.enemy = enemy;
+        board = new Tablero();
     }
 
+    static Context _context;
+    public static Context context // Asegura que solo exista una instancia de Context en todo el juego.
+    {
+        get
+        {
+            if (_context is null) _context = new Context();
+            return _context;
+        }
+    }
+
+    //Propiedades del Context//
+
+    public int TriggerPlayer => board.JugadordelMomento().Id;  //Devuelve el Id del jugador que desencadeno el efecto. 
+
+    public List<Card> Board()  //Devulve una lista con todas las cartas del tablero
+    {
+        List<Card> lista = new List<Card>();
+        foreach (var jugador in Jugadores.Values)
+        {
+            foreach (var item in jugador.zonasdelplayer.listaDeLasZonas)
+            {
+                lista.AddRange(item);
+            }
+        }
+        foreach (var item in Tablero.tablero.Climate)
+        {
+            lista.Add(item);
+        }
+        return lista;
+    }
+
+    public List<Card> HandOfPlayer(Player player)
+    {
+        return player.Hand;
+    }
+
+    public List<Card> FieldOfPlayer(Player player)
+    {
+        List<Card> lista = new List<Card>();
+        foreach (var item in player.zonasdelplayer.listaDeLasZonas)
+        {
+            lista.AddRange(item);
+        }
+        return lista;
+    }
+
+    public List<Card> GraveyardOfPlayer(Player player)
+    {
+        return player.zonasdelplayer.Cementerio;
+    }
+
+    public List<Card> DeckOfPlayer(Player player)
+    {
+        return player.Deck;
+    }
+
+    public List<Card> Hand()
+    {
+        return HandOfPlayer(board.JugadordelMomento());
+    }
+
+    public List<Card> OtherHand()
+    {
+        return HandOfPlayer(board.EnemigodelMomento());
+    }
+
+    public List<Card> Deck()
+    {
+        return DeckOfPlayer(board.JugadordelMomento());
+    }
+
+    public List<Card> OtherDeck()
+    {
+        return DeckOfPlayer(board.EnemigodelMomento());
+    }
+    
+    public List<Card> Field()
+    {
+        return FieldOfPlayer(board.JugadordelMomento());
+    }
+
+    public List<Card> OtherField()
+    {
+        return FieldOfPlayer(board.EnemigodelMomento());
+    }
+    
+    public List<Card> Graveyard()
+    {
+        return GraveyardOfPlayer(board.JugadordelMomento());
+    }
+
+     public List<Card> OtherGraveyard()
+    {
+        return GraveyardOfPlayer(board.EnemigodelMomento());
+    }
 }
+
+
+
+
+
+/*public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<object>
+{
+    private Entorno entorno = new Entorno();  // Es una estructura que mantiene las variables y sus valores actuales. Actúa como un contexto de ejecución para las expresiones y cards
+    
+    //Expresion de Asignacion
+    public object visitarAsignacionExpresion(Expresion.AsignarExpresion obj)
+    {
+        object valor = evaluar(obj.valor);
+        entorno.asignar(obj.nombre, valor);
+        return valor;        
+    }
+
+    // Expresion de Agrupacion
+    public object visitarExpresionAgrupacion(Expresion.ExpresionAgrupacion obj)
+    {
+        return evaluar(obj.expresion);
+    }
+
+    // Expresion Binaria
+    public object visitarExpresionBinaria(Expresion.ExpresionBinaria obj)
+    {
+        object izquierda = evaluar(obj.izquierda);
+        object derecha = evaluar(obj.derecha); 
+
+        switch (obj.operador.Tipo) 
+        {
+            case TokenType.Mayor:
+                comprobarNumero(obj.operador, izquierda, derecha);
+                return (double)izquierda > (double)derecha;
+            case TokenType.Mayor_igual:
+                comprobarNumero(obj.operador, izquierda, derecha);
+                return (double)izquierda >= (double)derecha;
+            case TokenType.Menor:
+                comprobarNumero(obj.operador, izquierda, derecha);
+                return (double)izquierda < (double)derecha;
+            case TokenType.Menor_igual:
+                comprobarNumero(obj.operador, izquierda, derecha);
+                return (double)izquierda <= (double)derecha;
+            case TokenType.Concatenacion:
+                return izquierda.ToString() + derecha.ToString();
+            case TokenType.Concatenacion_Espaciado:
+                return izquierda.ToString() + " " + derecha.ToString();
+            case TokenType.Menos:
+                comprobarNumero(obj.operador, izquierda, derecha);
+                return (double)izquierda - (double)derecha;
+            case TokenType.Bang_igual: 
+                return !esIgual(izquierda, derecha);
+            case TokenType.Igual_igual: 
+                return esIgual(izquierda, derecha);
+            case TokenType.Más:
+                if (izquierda is double && derecha is double) 
+                {
+                    return (double)izquierda + (double)derecha;
+                } 
+                throw new RuntimeError(obj.operador, "Los operandos deben ser dos números o dos cadenas.");
+            case TokenType.Slach:
+                comprobarNumero(obj.operador, izquierda, derecha);
+                return (double)izquierda / (double)derecha;
+            case TokenType.Asterizco:
+                comprobarNumero(obj.operador, izquierda, derecha);
+                return (double)izquierda * (double)derecha;
+        }
+
+        return null;        
+    }
+
+    // Expresion Literal
+    public object visitarExpresionLiteral(Expresion.ExpresionLiteral obj)
+    {
+        return obj.valor;
+    }
+
+    // Expresion Logica
+    public object visitarExpresionLogica(Expresion.ExpresionLogica obj)
+    {
+        object izquierda = evaluar(obj.izquierda);
+
+    if (obj.operador.Tipo == TokenType.Or) {
+      if (esVerdad(izquierda)) return izquierda;
+    } else {
+      if (!esVerdad(izquierda)) return izquierda;
+    }
+
+    return evaluar(obj.derecha);
+    }
+
+    // Expresion Unaria
+    public object visitarExpresionUnaria(Expresion.ExpresionUnaria obj)
+    {
+        object derecha = evaluar(obj.derecha);
+        switch (obj.operador.Tipo) 
+        { 
+            case TokenType.Bang:
+            return !esVerdad(derecha);        
+            case TokenType.Menos:
+            return -(double)derecha;    
+        }
+        return null;    
+    }
+
+    // Expresion Variable
+    public object visitarExpresionVariable(Expresion.ExpresionVariable obj)
+    {
+        return entorno.Get(obj.nombre);    
+    }
+
+    public object visitarGetExpresion(Expresion.GetExpresion obj)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object visitarLlamarExpresion(Expresion.LlamarExpresion obj)
+    {
+        
+        object destinatario = evaluar(obj.nombre);
+
+        List<object> argumentos = new List<object>();
+        foreach (Expresion argumento in obj.argumentos) { 
+        argumentos.Add(evaluar(argumento));
+        }
+        if (!(destinatario is IInvocable)) {
+        throw new RuntimeError(obj.parentesis,"Solo puede llamar a funciones y clases");
+        }
+
+        IInvocable funcion = (IInvocable)destinatario;
+        if (argumentos.Count != funcion.aridad()) {
+        throw new RuntimeError(obj.parentesis, "Expected " + funcion.aridad() + " arguments but got " + argumentos.Count + ".");
+    }
+
+        return funcion.call(this, argumentos);
+  
+    }
+
+    public object visitarSetExpresion(Expresion.SetExpresion obj)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object visitarSuperExpresion(Expresion.SuperExpresion obj)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Interpretar(List<claseMadre> cards) 
+    { 
+        try 
+        {
+            foreach (claseMadre objetcs in cards)
+             {
+                Ejecutar(objetcs); 
+            }       
+        } 
+        catch (RuntimeError error) 
+        {
+            Inicio.runtimeError(error);
+        }
+    }
+
+    private object evaluar(Expresion obj) //Llama al método Aceptar de una expresión, que a su vez llama al método visitante correspondiente en el intérprete
+    { 
+        return obj.Aceptar(this);
+    }
+
+    private bool esVerdad(object obj) //Determina si un objeto se evalúa como verdadero
+    { 
+        if (obj == null) return false;
+        if (obj is bool boleanValue) return (bool)obj; 
+        return true;
+    }
+
+    private bool esIgual(object a, object b) 
+    {
+        if (a == null && b == null) return true;
+        if (a == null) return false;
+
+        return a.Equals(b);
+    }
+
+    private void comprobarNumero(Token operador, object operando) //Verifica que un operando sea un número
+    {
+        if (operando is double) return;
+        throw new RuntimeError(operador, "El operando debe ser un número.");
+    }
+
+    private void comprobarNumero(Token operador, object izquierda, object derecha) //Verifica que un operando sea un número
+    {
+        if (izquierda is double && derecha is double) return;
+        throw new RuntimeError(operador, "El operando debe ser un número.");
+    }
+
+    private string encadenar(object obj) 
+    { 
+        if (obj == null) return "null";
+        if (obj is double) 
+        { 
+            string texto = obj.ToString(); 
+            if (texto.EndsWith(".0")) 
+            {
+                texto = texto.Substring(0, texto.Length - 2);
+            }
+            return texto;
+
+        }
+        return obj.ToString();
+    }
+
+    private void Ejecutar(claseMadre decl)
+    {
+        decl.Aceptar(this);
+    }
+    public object VisitarBloqueDecl(Declaracion.Bloque decl)
+    {
+        ejecutarBloque(decl.declaraciones, new Entorno(entorno));
+        return null;
+    }
+
+    private void ejecutarBloque(List<claseMadre> cards, Entorno entorno) 
+    {
+        Entorno anterior = this.entorno;
+        try 
+        {
+            this.entorno = entorno;
+
+            foreach (claseMadre card in cards) 
+            {
+                Ejecutar(card);
+            }
+        } 
+        finally 
+        {
+            this.entorno = anterior;
+        }
+
+    }
+
+    public object VisitarForDecl(Declaracion.For Decl)
+    {
+       
+
+     IEnumerator<object> colection;
+            try
+            {
+                colection = ((IEnumerable<object>)Decl.Colection).GetEnumerator();
+            }
+            catch (InvalidCastException)
+            {
+                throw new Exception("error");
+            }
+
+            if (entorno.Valores.ContainsKey(Decl.var.Valor)) throw new Exception("Variable ya defiinida anteriormente");
+
+            while (colection.MoveNext())
+            {
+                entorno.Get(Decl.var);
+                if(Decl.body is Declaracion.Bloque) VisitarBloqueDecl(Decl.body);
+            }
+
+    return null;
+    }
+
+
+    public object VisitarExpresionDecl(Declaracion.Expression Decl)
+    {
+        evaluar(Decl.ExpressionValue);
+        return null;
+
+    }
+
+    public object VisitarFuncionDecl(Declaracion.Funcion Decl)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    public object VisitarReturnDecl(Declaracion.Return Decl)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object VisitarVarDecl(Declaracion.Var Decl)
+    {
+        object valor = null;
+        if (Decl.Inicializador != null) 
+        {
+            valor = evaluar(Decl.Inicializador);
+        }
+
+        entorno.define(Decl.Nombre.Valor, valor);
+        return null;
+
+    }
+
+    public object VisitarIncYDec(Declaracion.IncYDec Decl)
+    {
+        if(Decl.operador.Tipo == TokenType.Aumentar) 
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], Decl.valor,new Token(TokenType.Más, "+", null, 0)));
+        }
+        if(Decl.operador.Tipo == TokenType.Disminuir) 
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], Decl.valor,new Token(TokenType.Menos, "-", null, 0)));
+        }
+        if(Decl.operador.Tipo == TokenType.Mas_mas)  
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Más, "+", null, 0)));
+        }
+        if(Decl.operador.Tipo == TokenType.Menos_menos)  
+        {
+            entorno.define(Decl.var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[Decl.var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Menos, "-", null, 0)));
+        }
+        return null;
+    }
+
+    public object VisitarWhileDecl(Declaracion.While Decl)
+    {
+        while (esVerdad(evaluar(Decl.Condicion))) 
+        {
+            Ejecutar(Decl.Cuerpo);
+        }
+        return null;
+    }
+
+    
+}*/
