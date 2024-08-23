@@ -5,23 +5,7 @@ public abstract class Expresion
     public Entorno entorno = new Entorno();
     public abstract object Ejecutar();
     public abstract Tipo type();
-    // public interface IVisitante<T>
-    // {
-    //     T visitarAsignacionExpresion(AsignarExpresion obj);
-    //     T visitarExpresionBinaria(ExpresionBinaria obj);
-    //     T visitarLlamarExpresion(LlamarExpresion obj);
-    //     T visitarGetExpresion(GetExpresion obj);
-    //     T visitarExpresionAgrupacion(ExpresionAgrupacion obj);
-    //     T visitarExpresionLiteral(ExpresionLiteral obj);
-    //     T visitarExpresionLogica(ExpresionLogica obj);
-    //     T visitarSetExpresion(SetExpresion obj);
-    //     T visitarSuperExpresion(SuperExpresion obj);
-    //     T visitarExpresionUnaria(ExpresionUnaria obj);
-    //     T visitarExpresionVariable(ExpresionVariable obj);
-
-    // }
     public abstract bool Semantica();
-    // public abstract T Aceptar<T>(IVisitante<T> visitante);
 
     public class AsignarExpresion : Expresion
     {      
@@ -33,11 +17,6 @@ public abstract class Expresion
             this.nombre = nombre;
             this.valor = valor;
         }
-
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarAsignacionExpresion(this);
-        // }
 
         public override object Ejecutar()
         {
@@ -75,13 +54,7 @@ public abstract class Expresion
             this.derecha = derecha;
             this.operador = operador;
         }
-        
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarExpresionBinaria(this);
-        // }
-
-        public override object Ejecutar()
+              public override object Ejecutar()
         {
             object expresionIzquierda = izquierda.Ejecutar();
             object expresionDerecha = derecha.Ejecutar(); 
@@ -187,11 +160,6 @@ public abstract class Expresion
             this.parentesis = parentesis;
         }
 
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarLlamarExpresion(this);
-        // }
-
         public override object Ejecutar()
         {
             throw new NotImplementedException();
@@ -220,11 +188,6 @@ public abstract class Expresion
             this.objeto = objeto;
         }
 
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarGetExpresion(this);
-        // }
-
         public override object Ejecutar()
         {
             throw new NotImplementedException();
@@ -250,11 +213,6 @@ public abstract class Expresion
         {
             this.expresion = expresion;
         }
-
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarExpresionAgrupacion(this);
-        // }
 
         public override object Ejecutar()
         {
@@ -284,11 +242,6 @@ public abstract class Expresion
             this.Type = Type;
         
         }
-
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarExpresionLiteral(this);
-        // }
 
         public override bool Semantica()
         {
@@ -335,11 +288,6 @@ public abstract class Expresion
             this.operador = operador;
         }
 
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarExpresionLogica(this);
-        // }
-
         public override object Ejecutar()
         {
             object expresionIzquierda = izquierda.Ejecutar();
@@ -384,27 +332,18 @@ public abstract class Expresion
     }
 
     //Fijar Expresion
-    public class SetExpresion : Expresion
+    public class Objeto : Expresion
     {
-        public Expresion objeto;
-        public Token name;
-        public Expresion valor;
+        public Object valor;
 
-        public SetExpresion(Expresion objeto, Token name, Expresion valor)
+        public Objeto(Object valor)
         {
-            this.name = name;
-            this.objeto = objeto;
             this.valor = valor;
         }
-
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarSetExpresion(this);
-        // }
-
+      
         public override object Ejecutar()
         {
-            throw new NotImplementedException();
+            return valor;
         }
 
         public override bool Semantica()
@@ -414,7 +353,10 @@ public abstract class Expresion
 
         public override Tipo type()
         {
-            throw new NotImplementedException();
+            if(valor is int || valor is double) return Tipo.Numero;
+            if(valor is string) return Tipo.Cadena;
+            if(valor is Card) return Tipo.Card;
+            else return Tipo.Object;
         }
     }
 
@@ -429,11 +371,6 @@ public abstract class Expresion
             this.palabraReservada = palabraReservada;
             this.metodo = metodo;
         }
-
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarSuperExpresion(this);
-        // }
 
         public override object Ejecutar()
         {
@@ -463,11 +400,6 @@ public abstract class Expresion
             this.operador = operador;
             this.derecha = derecha;
         }
-
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarExpresionUnaria(this);
-        // }
 
         public override object Ejecutar()
         {
@@ -523,11 +455,6 @@ public abstract class Expresion
             this.nombre = nombre;
         }
 
-        // public override T Aceptar<T>(IVisitante<T> visitante)
-        // {
-        //     return visitante.visitarExpresionVariable(this);
-        // }
-
         public override object Ejecutar()
         {
             return entorno.Get(nombre);    
@@ -548,7 +475,38 @@ public abstract class Expresion
         }
     }
 
+    public class Predicate : Expresion
+    {
+        public Token var;
+        public Expresion condicion;
 
+        public Predicate(Token var, Expresion condicion)
+        {
+            this.var = var;
+            this.condicion = condicion;
+        }
+        public override object Ejecutar()
+        {
+            return new Predicate<Card>(EvaluarCarta);
+        }
+
+        private bool EvaluarCarta(Card card)
+        {
+            entorno.asignar(var, new Objeto(card));
+            return (bool)condicion.Ejecutar();
+        }
+
+        public override bool Semantica()
+        {
+            if(!(condicion.type() is Tipo.Bool)) return false;
+            return true;
+        }
+
+        public override Tipo type()
+        {
+            return Tipo.Predicate;
+        }
+    }
 }
 
 

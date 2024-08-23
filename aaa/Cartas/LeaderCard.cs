@@ -1,7 +1,9 @@
 
-public class LeaderCard : Card
+
+
+public class LeaderCard : BaseCard
 {
-    public LeaderCard(Expresion.ExpresionLiteral name, Expresion.ExpresionLiteral type, Expresion.ExpresionLiteral faction, Expresion.ExpresionLiteral power, List<Expresion> range) : base(name, type, faction, power, range)
+    public LeaderCard(string Name, int InitialPower, string Faction, TipoDeCarta TipoDeCarta, List<Zonas> destinations, Effect Effect = null) : base(Name, InitialPower, Faction, TipoDeCarta, destinations, Effect)
     {
     }
 }

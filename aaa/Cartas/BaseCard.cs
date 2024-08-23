@@ -7,11 +7,11 @@ public class BaseCard
         get => _power;
         set => _power =this is UnitCard ? value : _power; }
     public Effect Effect;
-    public Faction Faction;
+    public string Faction;
     public TipoDeCarta TipoDeCarta;
-    public Zonas[] destinations = new Zonas[3];
+    public List<Zonas> destinations = new List<Zonas>();
 
-    public BaseCard(string Name, int InitialPower, Faction Faction, TipoDeCarta TipoDeCarta, Effect Effect, Zonas[] destinations)
+    public BaseCard(string Name, int InitialPower, string Faction, TipoDeCarta TipoDeCarta, List<Zonas> destinations, Effect Effect = null)
     {
         this.Name = Name;
         this.InitialPower = InitialPower;

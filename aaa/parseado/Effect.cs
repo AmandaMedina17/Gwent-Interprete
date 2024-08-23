@@ -6,9 +6,9 @@ public class Effect: claseMadre
     private Expresion.ExpresionLiteral name;
     public Declaracion Action;
     private Dictionary<string, Tipo> Params;
-    private Token Context;
-    private Token Targets;
-    private bool ParametrosAndTargets = false;
+    private Token context;
+    private Token targets;
+    private bool parametrosAndTargets = false;
     Entorno entorno;
 
     public Effect(Expresion.ExpresionLiteral name, Declaracion Action, List<(Token, Token)> Params, Token Targets, Token Context)
@@ -16,8 +16,8 @@ public class Effect: claseMadre
         this.name = name;
         this.Action = Action;
         this.Params = new Dictionary<string, Tipo>();
-        this.Targets = Targets is null ? new Token(TokenType.Identificador, "targets", null, 0) : Targets;
-        this.Context = Context is null ? new Token(TokenType.Identificador, "context", null, 0) : Context;
+        this.targets = Targets is null ? new Token(TokenType.Identificador, "targets", null, 0) : Targets;
+        this.context = Context is null ? new Token(TokenType.Identificador, "context", null, 0) : Context;
 
 
         foreach(var dupla in Params)
@@ -65,11 +65,31 @@ public class Effect: claseMadre
 
     public override void Ejecutar()
     {
+        if(!parametrosAndTargets) throw new Exception("Trying to run " + name + " effect whitout parameters");
         Action.Ejecutar();
     }
 
-    // public void TargetsAndParametros(List<(Token, Expresion)> parametros, Expresion targets)
-    // {
-    //     if(!(this.Context.Valor == "context")) entorno.asignar(this.Context, ) 
-    // }
+    public void TargetsAndParametros(List<(Token, Expresion)> parametros, Expresion targets)
+    {
+        if(!(this.context.Valor != "context")) entorno.asignar(this.context, Context.context);
+        entorno.asignar(this.targets, targets);
+
+        foreach (var par in parametros)
+        {
+            try
+            {
+                if (Params[par.Item1.Valor] is Tipo.Object) System.Console.WriteLine("Asegurar tipo");
+                else if (!(par.Item2.type() is Tipo.Object || par.Item2.type() == Params[par.Item1.Valor])) System.Console.WriteLine("Invalid expression received in param");;
+            }
+            catch (KeyNotFoundException)
+            {
+                System.Console.WriteLine("Invalid param received");
+            }
+
+            entorno.asignar(par.Item1, par.Item2);
+        }
+    
+        parametrosAndTargets = true;
+    }
 }
+

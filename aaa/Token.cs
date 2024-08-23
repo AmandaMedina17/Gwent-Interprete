@@ -56,6 +56,10 @@ public enum Tipo
     Cadena,
     Bool,
     nil,
-
+    Object,
+    Card,
+    Predicate,
+    Lista, 
+    Efecto,
 }
 

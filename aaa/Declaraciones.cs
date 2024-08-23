@@ -332,6 +332,63 @@ public abstract class Declaracion : claseMadre
         }
     }
 
+    public class ActivacionEfecto : Declaracion
+    {
+        Expresion Nombre;
+        List<(Token, Expresion)> parametros;
+        Expresion selector;
+        Effect efecto;
+        
+        public ActivacionEfecto(Expresion Nombre, List<(Token, Expresion)> parametros, Expresion selector)
+        {
+            this.Nombre = Nombre;
+            this.parametros = parametros;
+            this.selector = selector;
+        }
+        public override void Ejecutar()
+        {
+            efecto.Ejecutar();
+        }
+
+        public override bool Semantica()
+        {
+            if(!Nombre.Semantica()) return false;
+            if (Nombre.type() != Tipo.Cadena) 
+            {
+                System.Console.WriteLine("Nombre del efecto invalido");
+                return false;
+            }
+            if (!selector.Semantica()) return false;
+            if (!(selector is null) && selector.type() != Tipo.Lista)
+            {
+                System.Console.WriteLine("Selector invalido");
+                return false;
+            }
+
+            foreach (var item in parametros)
+            {
+                if(!item.Item2.Semantica())
+                {
+                    System.Console.WriteLine(item.Item1.Valor + "invalido");
+                    return false;
+                }
+            
+            }
+
+                try
+                {
+                    efecto = Effect.efectosGuardados[(string)Nombre.Ejecutar()];
+                    efecto.TargetsAndParametros(parametros, selector); 
+                }
+                catch (KeyNotFoundException)
+                {
+                    return false;
+                }
+
+            return true;
+        }
+    }
+
 
     // public abstract T Aceptar<T>(IVisitor<T> visitante);
 

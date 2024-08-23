@@ -50,25 +50,30 @@ public class Selector : Expresion
 
     public override bool Semantica()
     {
-        bool noHayErrores = true;
-
         if(Source.type() != Tipo.Cadena) 
         {
             System.Console.WriteLine("Selector Source is invalid.");
-            noHayErrores= false;
+            return false;
         }
+        else if (!Source.Semantica()) return false;
         else if(Single.type() != Tipo.Bool)
         {
             System.Console.WriteLine("Selector Single is invalid.");
-            noHayErrores= false;
+            return false;
         }
-        
-
-        return noHayErrores;
+        else if (!Single.Semantica()) return false;
+        else if (Predicate.type() != Tipo.Predicate)
+        {
+            System.Console.WriteLine("Selector Predicate is invalid");
+            return false;
+        }
+        else if(!Predicate.Semantica()) return false;
+        return true;
+    
     }
 
     public override Tipo type()
     {
-        throw new NotImplementedException();
+        return Tipo.Lista;
     }
 }
