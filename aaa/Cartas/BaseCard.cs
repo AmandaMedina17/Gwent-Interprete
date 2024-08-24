@@ -17,8 +17,17 @@ public class BaseCard
         this.InitialPower = InitialPower;
         this.Faction = Faction;
         this.TipoDeCarta = TipoDeCarta;
-        this.Effect = Effect;
         this.destinations = destinations;
+        if(Effect == null) WarehouseOfEffects.EmptyEffect();
+        else this.Effect = Effect;
+
     }
 
+
+
+}
+
+public enum Worth
+{
+    Golden, Silver
 }

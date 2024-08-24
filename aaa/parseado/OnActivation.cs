@@ -34,5 +34,18 @@ public class OnActivation : Declaracion
         }
         return true;
     }
+
+    public bool MethodExecution(Context context)
+        {
+            try
+            {
+                Ejecutar();
+                return true;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
 }
 
