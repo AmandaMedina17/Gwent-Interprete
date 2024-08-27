@@ -38,7 +38,7 @@ public enum TokenType {
     And, Class, Else, False, For, If, Or, Return, True, Var, While, Fun, Print, In, 
 
     Effect, Name, Params, Amount, Action, Card, Type, Faction, Power, Range, OnActivation, Selector, 
-    Source, Single, Predicate, PosAction, Effect_card, Targets, Context,
+    Source, Single, Predicate, PostAction, Effect_card, Targets, Context,
 
     Fin, Null,
 

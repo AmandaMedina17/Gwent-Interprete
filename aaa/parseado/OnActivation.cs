@@ -35,16 +35,16 @@ public class OnActivation : Declaracion
         return true;
     }
 
-    public bool MethodExecution(Context context)
+    public void Ejecucion(EstadoDeJuego estadoDeJuego)
         {
             try
             {
                 Ejecutar();
-                return true;
+            
             }
             catch(Exception)
             {
-                return false;
+             
             }
         }
 }

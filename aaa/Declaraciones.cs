@@ -18,32 +18,47 @@ public abstract class Declaracion : claseMadre
         public Token var;
         public Token operador;
         public Expresion valor;
+        public Entorno entorno;
         
-        public IncYDec(Token var, Token operador, Expresion valor)
+        public IncYDec(Token var, Entorno entorno = null,Token operador = null, Expresion valor= null)
         {
             this.var = var;
             this.operador = operador;
             this.valor = valor;
+            this.Ejecutar();
+            this.entorno = entorno == null ? Entorno.Encerrado : entorno;
         }
 
         public override void Ejecutar()
         {
-             if(operador.Tipo == TokenType.Aumentar) 
+            try
             {
-                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], valor,new Token(TokenType.Más, "+", null, 0)));
+                switch (operador.Tipo)
+                {
+                    case TokenType.Igual:
+                        entorno.define(var.Valor, valor);
+                        break;
+                    case TokenType.Aumentar:
+                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor], entorno.Valores[var.Valor], new Token(TokenType.Más, "+", null, 0)));
+                        break;
+                    case TokenType.Disminuir:
+                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor],  entorno.Valores[var.Valor],new Token(TokenType.Menos, "-", null, 0)));
+                        break;
+                    case TokenType.Mas_mas:
+                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0)), new Token(TokenType.Más, "+", null, 0)));
+                        break;
+                    case TokenType.Menos_menos:
+                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0)), new Token(TokenType.Menos, "-", null, 0)));
+                        break;
+                    default:
+                        throw new Exception("Declaracion invalida");
+                }
             }
-            if(operador.Tipo == TokenType.Disminuir) 
+            catch (NullReferenceException)
             {
-                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], valor,new Token(TokenType.Menos, "-", null, 0)));
+                //if there is no operation defined, then nothing will execute and this will only allow to access the variable value
             }
-            if(operador.Tipo == TokenType.Mas_mas)  
-            {
-                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Más, "+", null, 0)));
-            }
-            if(operador.Tipo == TokenType.Menos_menos)  
-            {
-                entorno.define(var.Valor, new Expresion.ExpresionBinaria((Expresion)entorno.Valores[var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0), Tipo.Numero), new Token(TokenType.Menos, "-", null, 0)));
-            }
+            
         }
 
         // public override T Aceptar<T>(IVisitor<T> visitante)
@@ -59,6 +74,12 @@ public abstract class Declaracion : claseMadre
             }
            
             return true;
+        }
+
+        public Expresion Evaluar()
+        {
+            Ejecutar();
+            return (Expresion)entorno.Valores[var.Valor];
         }
 
        
@@ -152,12 +173,12 @@ public abstract class Declaracion : claseMadre
 
         public override void Ejecutar()
         {
-             IEnumerator<object> colection;
+            IEnumerator<object> colection;
             try
             {
-                colection = ((IEnumerable<object>)Colection).GetEnumerator();
+                colection = ((IEnumerable<object>)Colection.Ejecutar()).GetEnumerator();
             }
-            catch (InvalidCastException)
+            catch
             {
                 throw new Exception("error");
             }
@@ -277,7 +298,7 @@ public abstract class Declaracion : claseMadre
                 valor = Inicializador.Ejecutar();
             }
 
-            entorno.define(Nombre.Valor, valor);
+            entorno.define(Nombre.Valor, (Expresion)valor);
         }
 
         public Token Nombre { get; }

@@ -17,7 +17,6 @@ public class Escaner
     public Escaner(string fuente) 
     {
         this.fuente = fuente;
-        palabrasReservadas();
     }
 
     private bool isAtEnd() //Este método verifica si se ha llegado al final de la cadena de entrada.
@@ -229,13 +228,9 @@ public class Escaner
         return true;
     }
         
-    private static Dictionary<string, TokenType> keywords;
-   
-    private void palabrasReservadas()
+    public static Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>
     {
-        keywords = new Dictionary<string, TokenType>
-        {
-            { "false", TokenType.False },
+        { "false", TokenType.False },
             { "for", TokenType.For },
             { "else", TokenType.Else },
             { "return", TokenType.Return },
@@ -256,13 +251,9 @@ public class Escaner
             { "Source", TokenType.Source },
             { "Single", TokenType.Single },
             { "Predicate", TokenType.Predicate },
-            { "PostAction", TokenType.PosAction },
+            { "PostAction", TokenType.PostAction },
             { "Print", TokenType.Print },
-            { "in", TokenType.In }
-        };
-
-
-
-
-    }
+            { "in", TokenType.In },
+    };
+   
 }

@@ -1,16 +1,32 @@
 public class Entorno
 {
-    private Entorno encerrando;
-    public Dictionary<string, object> Valores = new Dictionary<string, object>();
+    private static Entorno encerrado;
+    private Entorno parent;
+    public Dictionary<string, Expresion> Valores = new Dictionary<string, Expresion>();
 
+
+    public static Entorno Encerrado
+        {
+            get
+            {
+                if (encerrado == null)
+                {
+                    encerrado = new Entorno();
+                    encerrado.parent = null;
+                    encerrado.Valores.Add("context", Context.context);
+                }
+
+                return encerrado;
+            }
+        }    
     public Entorno()
     {
-        this.encerrando = null;
+        this.parent = null;
     }
 
-    public Entorno(Entorno encerrando)
+    public Entorno(Entorno parent)
     {
-        this.encerrando = encerrando;
+        this.parent = parent;
     }
 
     public object Get(Token nombre) 
@@ -19,37 +35,87 @@ public class Entorno
         return Valores[nombre.Valor];
         }
 
-        if (encerrando != null) return encerrando.Get(nombre);
+        if (parent != null) return parent.Get(nombre);
         throw new RuntimeError(nombre, "Undefined variable '" + nombre.Valor + "'.");
     }
 
-    public void asignar(Token nombre, object valor) 
+    public void asignar(Token nombre, Expresion valor) 
     {
         if (Valores.ContainsKey(nombre.Valor)) {
         Valores.Add(nombre.Valor, valor);
         return;
         }
 
-        if (encerrando != null) 
+        if (parent != null) 
         {
-            encerrando.asignar(nombre, valor);
+            parent.asignar(nombre, valor);
             return;
         }
         
         throw new RuntimeError(nombre, "Undefined variable '" + nombre.Valor + "'.");
     }
 
-    public void define(string nombre, object valor)
+    public void define(string nombre, Expresion valor)
     {
         if (Valores.ContainsKey(nombre))
-    {
-        // Si la variable ya está definida, actualiza su valor
-        Valores[nombre] = valor;
+        {
+            // Si la variable ya está definida, actualiza su valor
+            Valores[nombre] = valor;
+        }
+        else
+        {
+            // Si no está definida, agrega la nueva variable
+            Valores.Add(nombre, valor);
+        }
     }
-    else
-    {
-        // Si no está definida, agrega la nueva variable
-        Valores.Add(nombre, valor);
-    }
-    }
+
+    public void Set(Token var, Expresion valor)
+        {
+            if (var.Valor == "context") throw new Exception("Context es una keyword");
+
+            if (Valores.ContainsKey(var.Valor))
+            {
+                if (valor != null)
+                {
+                    Valores[var.Valor] = valor;
+                }
+                else
+                {
+                    throw new Exception("Variable declarada ya anteriormente");
+                }
+
+            }
+            else if (parent.Valores.ContainsKey(var.Valor)) parent.Valores[var.Valor]= valor;
+            else Valores.Add(var.Valor, valor);
+        }
+
+    public Expresion this[string name]
+        {
+            get
+            {
+                try
+                {
+                    if (Valores.ContainsKey(name)) return Valores[name];
+                    else if (parent.Valores.ContainsKey(name)) return parent.Valores[name];
+                    else throw new KeyNotFoundException();
+                }
+                catch (KeyNotFoundException)
+                {
+                    throw new Exception("Variable no declarada");
+                }
+            }
+            private set
+            {
+                try
+                {
+                    if (Valores.ContainsKey(name)) Valores[name] = value;
+                    else if (parent.Valores.ContainsKey(name)) parent.Valores[name] = value;
+                    else throw new KeyNotFoundException();
+                }
+                catch (KeyNotFoundException)
+                {
+                    throw new Exception("Variable no declarada");
+                }
+            }
+        }
 }

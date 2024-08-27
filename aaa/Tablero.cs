@@ -1,13 +1,13 @@
 public class Tablero
 {
     public static Tablero tablero = new Tablero();
-    public Dictionary<string, List<Card>> Zonas;
+    public Dictionary<string, List<BaseCard>> Zonas;
     public int Ronda = 0;
     public bool TurnoAcabado;  
     public bool RondaAcabada;
     public bool GriegosJugando;
     public bool NuevaRonda = true;
-    public List<Card> Climate = new List<Card>(3);
+    public List<BaseCard> Climate = new List<BaseCard>(3);
     public int RondasGanadasGriegos = 0;
     public int RondasGanadasNordicos = 0;
 

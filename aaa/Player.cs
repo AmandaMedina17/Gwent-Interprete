@@ -2,8 +2,8 @@ public class Player
 { 
     public int Id;
     public Faction nombre;
-    public List<Card> Deck;
-    public List<Card> Hand;
+    public List<BaseCard> Deck;
+    public List<BaseCard> Hand;
     public LeaderCard leader;
     public int TotalPoint =0;
     public bool CanPlay = false;
@@ -14,14 +14,41 @@ public class Player
     private static Player _griegos;
     private static Player _nordicos;
 
-    public static Player Griegos => _griegos ??= CrearJugador(Faction.Greek_Gods);
-    public static Player Nordicos => _nordicos ??= CrearJugador(Faction.Nordic_Gods);
+    public static Player Griegos
+    {
+        get 
+        {
+            if (_griegos == null)
+            {
+                _griegos = new Player(Faction.Greek_Gods);
+                _griegos.estadoDeJuego = new EstadoDeJuego(_griegos, Nordicos);
+                _griegos.zonasdelplayer = new ZonasdelTablero(_griegos);
+                
+            }
+            return _griegos;
+        }
+    }
+
+    public static Player Nordicos
+    {
+        get 
+        {
+            if (_nordicos == null)
+            {
+                _nordicos = new Player(Faction.Nordic_Gods);
+                _nordicos.estadoDeJuego = new EstadoDeJuego(_nordicos, Griegos);
+                _nordicos.zonasdelplayer = new ZonasdelTablero(_nordicos);
+            }
+            return _nordicos;
+        }
+    }
+
 
     public Player(Faction a)
     {
         this.nombre = a;
-        Hand = new List<Card>(10);
-        Deck = new List<Card>(30);
+        Hand = new List<BaseCard>(10);
+        Deck = new List<BaseCard>(30);
         this.Id = (int)nombre;
 
     }

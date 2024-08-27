@@ -6,24 +6,43 @@ public class BaseCard
     public int Power {
         get => _power;
         set => _power =this is UnitCard ? value : _power; }
-    public Effect Effect;
-    public string Faction;
+    public EffectDelegate EffectDelegate;
+    public Faction Faction;
     public TipoDeCarta TipoDeCarta;
     public List<Zonas> destinations = new List<Zonas>();
+    public List<BaseCard> PlaceRightNow;
 
-    public BaseCard(string Name, int InitialPower, string Faction, TipoDeCarta TipoDeCarta, List<Zonas> destinations, Effect Effect = null)
+    public BaseCard(string Name, int InitialPower, Faction Faction, TipoDeCarta TipoDeCarta, List<Zonas> destinations, EffectDelegate effectDelegate = null)
     {
+        SelectEffect(effectDelegate);
         this.Name = Name;
         this.InitialPower = InitialPower;
         this.Faction = Faction;
         this.TipoDeCarta = TipoDeCarta;
         this.destinations = destinations;
-        if(Effect == null) WarehouseOfEffects.EmptyEffect();
-        else this.Effect = Effect;
+        
 
     }
+    public void Place(List<BaseCard> PlaceRightNow) => this.PlaceRightNow = PlaceRightNow is null ? Context.context.Jugadores[Faction].Hand : PlaceRightNow;
 
+    public void SelectEffect(EffectDelegate effectDelegate)
+    {
+        if(effectDelegate == null) EffectDelegate = WarehouseOfEffects.EmptyEffect;
+        else EffectDelegate = effectDelegate;
+    }
 
+    public virtual void Effect(EstadoDeJuego estadoDeJuego)
+    {
+        try
+        {
+            EffectDelegate.Invoke(estadoDeJuego);
+
+        }
+        catch (System.NullReferenceException)
+        {
+          
+        }
+    }
 
 }
 

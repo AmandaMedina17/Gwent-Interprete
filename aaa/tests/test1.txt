@@ -1,9 +1,11 @@
 effect {
     Name: "Damage",
-    Params: {
-        Amount: Number
-    },
+    Params: { amount: Number },
     Action: (targets, context) => {
-        Print "amanda";
+    for target in targets {
+        i = 0;
+        while (i++ < amount) 
+            target.Power -= 1;
+        };
     }
 }

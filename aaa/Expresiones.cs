@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Reflection;
 
 public abstract class Expresion
 {
@@ -54,7 +55,7 @@ public abstract class Expresion
             this.derecha = derecha;
             this.operador = operador;
         }
-              public override object Ejecutar()
+        public override object Ejecutar()
         {
             object expresionIzquierda = izquierda.Ejecutar();
             object expresionDerecha = derecha.Ejecutar(); 
@@ -147,27 +148,61 @@ public abstract class Expresion
         }
     }
 
-    public class LlamarExpresion : Expresion
+    public class Metodo : Expresion
     {
-        public Expresion nombre;
-        public Token parentesis;
+        public Expresion callee;
+        public Token caller;
         public List<Expresion> argumentos;
 
-        public LlamarExpresion(Expresion nombre, Token parentesis, List<Expresion> argumentos)
+        public Metodo(Expresion callee, Token caller, List<Expresion> argumentos = null)
         {
-            this.nombre = nombre;
+            this.callee = callee;
             this.argumentos = argumentos;
-            this.parentesis = parentesis;
+            this.caller = caller;
         }
 
         public override object Ejecutar()
         {
-            throw new NotImplementedException();
+            object callee = this.callee.Ejecutar();
+
+            Type type;
+            if (callee is List<BaseCard>) type = typeof(List<BaseCard>);
+            else if (callee is Card) type = typeof(Card);
+            else if (callee is string) type = typeof(string);
+            else if (callee is double) type = typeof(double);
+            else type = typeof(object);
+
+            MethodInfo method = null;
+
+            try
+            {
+                method = type.GetMethod(caller.Valor);
+            }
+            catch (AmbiguousMatchException)
+            {
+                method = type.GetMethod(caller.Valor, new Type[0]);
+            }
+
+            if (method != null)
+            {
+                try
+                {
+                    object[] argumentosArray = argumentos.ToArray();
+                    return method.Invoke(callee, argumentosArray);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw new Exception("Argumentos invalidos");
+                }
+            }
+            else throw new Exception("Metodo no encontrado");
         }
+
+    
 
         public override bool Semantica()
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public override Tipo type()
@@ -177,12 +212,12 @@ public abstract class Expresion
     }
 
     //Obtener expresion
-    public class GetExpresion : Expresion
+    public class Propiedad : Expresion
     {
         public Expresion objeto;
         public Token name;
 
-        public GetExpresion(Expresion objeto, Token name)
+        public Propiedad(Expresion objeto, Token name)
         {
             this.name = name;
             this.objeto = objeto;
@@ -190,12 +225,26 @@ public abstract class Expresion
 
         public override object Ejecutar()
         {
-            throw new NotImplementedException();
+            object callee = objeto.Ejecutar();
+
+            Type type;
+            if (callee is List<BaseCard>) type = typeof(List<BaseCard>);
+            else if (callee is BaseCard) type = typeof(BaseCard);
+            else if (callee is string) type = typeof(string);
+            else if (callee is double) type = typeof(double);
+            else type = typeof(object);
+
+            if (type.GetProperty(name.Valor) != null)
+            {
+                return type.GetProperty(name.Valor).GetValue(callee);
+            }
+            else throw new Exception("Propiedad no encontrada");
         }
+        
 
         public override bool Semantica()
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public override Tipo type()
@@ -236,10 +285,10 @@ public abstract class Expresion
         public Token valor;
         public Tipo Type;
 
-        public ExpresionLiteral(Token valor, Tipo Type)
+        public ExpresionLiteral(Token valor)
         {
             this.valor = valor;
-            this.Type = Type;
+            Type = type();
         
         }
 
@@ -256,7 +305,7 @@ public abstract class Expresion
                 case TokenType.Cadena: return Tipo.Cadena;
                 case TokenType.True: return Tipo.Bool;
                 case TokenType.False: return Tipo.Bool;
-                default: throw new Exception("Invalid literal expression type");
+                default: return Tipo.Object;
             }
         }
 
@@ -331,12 +380,40 @@ public abstract class Expresion
         }
     }
 
-    //Fijar Expresion
+    public class Indexador : Expresion
+    {
+        Expresion Collection;
+        Expresion indice;
+
+        public Indexador(Expresion Collection, Expresion indice)
+        {
+            this.Collection = Collection;
+            this.indice = indice;
+        }
+        public override object Ejecutar()
+        {
+            
+            List<BaseCard> collection = (List<BaseCard>)Collection.Ejecutar();
+            int intIndice = (int)indice.Ejecutar();
+            return collection[intIndice];
+
+        }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
+        }
+    }
     public class Objeto : Expresion
     {
-        public Object valor;
+        public object valor;
 
-        public Objeto(Object valor)
+        public Objeto(object valor)
         {
             this.valor = valor;
         }
@@ -360,33 +437,6 @@ public abstract class Expresion
         }
     }
 
-    //Super Expresion
-    public class SuperExpresion : Expresion
-    {
-        public Token palabraReservada;
-        public Token metodo;
-
-        public SuperExpresion(Token palabraReservada, Token metodo)
-        {
-            this.palabraReservada = palabraReservada;
-            this.metodo = metodo;
-        }
-
-        public override object Ejecutar()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool Semantica()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Tipo type()
-        {
-            throw new NotImplementedException();
-        }
-    }
 
     //Expresion Unaria
     public class ExpresionUnaria : Expresion
@@ -505,6 +555,31 @@ public abstract class Expresion
         public override Tipo type()
         {
             return Tipo.Predicate;
+        }
+    }
+
+    public class DeclVar : Expresion
+    {
+        public Declaracion.IncYDec valor;
+
+        public DeclVar(Declaracion.IncYDec valor)
+        {
+            this.valor = valor;
+        }
+
+        public override object Ejecutar()
+        {
+            return valor.Evaluar().Ejecutar();
+        }
+
+        public override bool Semantica()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Tipo type()
+        {
+            throw new NotImplementedException();
         }
     }
 }

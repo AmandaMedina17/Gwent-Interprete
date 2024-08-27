@@ -91,16 +91,17 @@ public class Effect: claseMadre
     }
 }
 
-public class WarehouseOfEffects
-{
-    public static Dictionary<string, Effect> efectos = new Dictionary<string, Effect>();
 
-    public static void AgregarEfecto(string name, Effect effect)
+public static class WarehouseOfEffects
+{
+    public static Dictionary<string, EffectDelegate> efectos = new Dictionary<string, EffectDelegate>();
+
+    public static void AgregarEfecto(string name, EffectDelegate effect)
     {
         efectos.Add(name, effect);
     }
 
-public static Effect ObtenerEfecto(string name)
+public static EffectDelegate ObtenerEfecto(string name)
     {
         try
         {
@@ -113,7 +114,7 @@ public static Effect ObtenerEfecto(string name)
     }
 
     //Efectos
-    public static void EmptyEffect()
+    public static void EmptyEffect(EstadoDeJuego estadoDeJuego)
     {
         
     }
@@ -391,3 +392,4 @@ public static Effect ObtenerEfecto(string name)
     }
 }
 
+public delegate void EffectDelegate(EstadoDeJuego estadoDeJuego);

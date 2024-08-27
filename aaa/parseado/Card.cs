@@ -5,6 +5,7 @@ public class Card : claseMadre
     private Expresion.ExpresionLiteral faction;
     private Expresion.ExpresionLiteral power;
     private List<Expresion> range;
+    public Effect effect;
     OnActivation onActivation;
 
     public static List<BaseCard> cartas = new List<BaseCard>();
@@ -63,44 +64,40 @@ public class Card : claseMadre
             switch ((string)type.Ejecutar())
             {
                 case "Oro":
-                    cartas.Add(new UnitCard(name, power, faction, TipoDeCarta.Unit, zonas));
+                    cartas.Add(new UnitCard(name, power, Faction, TipoDeCarta.Unit, zonas));
                     break;
                 case "Plata":
-                    cartas.Add(new UnitCard(name, power, faction, TipoDeCarta.Unit, zonas));
+                    cartas.Add(new UnitCard(name, power, Faction, TipoDeCarta.Unit, zonas));
                     break;
                 case "Weather":
-                    cartas.Add(new ClimateCard(name, power, faction, TipoDeCarta.Climate, zonas));
+                    cartas.Add(new ClimateCard(name, power, Faction, TipoDeCarta.Climate, zonas));
                     break;
                 case "Bonus":
-                    cartas.Add(new IncreaseCard(name, power, faction, TipoDeCarta.Increase, zonas));
+                    cartas.Add(new IncreaseCard(name, power, Faction, TipoDeCarta.Increase, zonas));
                     break;
                 case "Bait":
-                    cartas.Add(new BaitCard(name, power, faction, TipoDeCarta.Bait, zonas));
+                    cartas.Add(new BaitCard(name, power, Faction, TipoDeCarta.Bait, zonas));
                     break;
                 case "Clear":
-                    cartas.Add(new ClearanceCard(name, power, faction, TipoDeCarta.Clearance, zonas));
+                    cartas.Add(new ClearanceCard(name, power, Faction, TipoDeCarta.Clearance, zonas));
                     break;
                 case "Leader":
-                    cartas.Add(new LeaderCard(name, power, faction, TipoDeCarta.Leader, zonas));
+                    cartas.Add(new LeaderCard(name, power, Faction, TipoDeCarta.Leader, zonas));
                     break;
                 default:
                     throw new Exception("Invalid card type.");
-            }
+            } 
 
-            if (!(onActivation is null));
+            if (!(onActivation is null)) cartas[cartas.Count-1].SelectEffect(onActivation.Ejecucion);
         
     }
+
 }
 
-public enum Type
+public enum TypeOfCard
 {
     Gold, Silver, Clima, Increase, Leader, 
 }
-public enum Range
-{
-    Melee, Ranged, Siege, 
-}
-
 
 public enum Faction
 {

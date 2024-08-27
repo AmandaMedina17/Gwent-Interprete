@@ -1,6 +1,6 @@
 using System.Reflection.Metadata;
 
-public class Context
+public class Context : Expresion
 {
     public Tablero board;
     public Dictionary<Faction, Player> Jugadores = new Dictionary<Faction, Player> {{Faction.Greek_Gods, Player.Griegos}, {Faction.Nordic_Gods, Player.Nordicos}};
@@ -24,9 +24,9 @@ public class Context
 
     public int TriggerPlayer => board.JugadordelMomento().Id;  //Devuelve el Id del jugador que desencadeno el efecto. 
 
-    public List<Card> Board()  //Devulve una lista con todas las cartas del tablero
+    public List<BaseCard> Board()  //Devulve una lista con todas las cartas del tablero
     {
-        List<Card> lista = new List<Card>();
+        List<BaseCard> lista = new List<BaseCard>();
         foreach (var jugador in Jugadores.Values)
         {
             foreach (var item in jugador.zonasdelplayer.listaDeLasZonas)
@@ -41,14 +41,14 @@ public class Context
         return lista;
     }
 
-    public List<Card> HandOfPlayer(Player player)
+    public List<BaseCard> HandOfPlayer(Player player)
     {
         return player.Hand;
     }
 
-    public List<Card> FieldOfPlayer(Player player)
+    public List<BaseCard> FieldOfPlayer(Player player)
     {
-        List<Card> lista = new List<Card>();
+        List<BaseCard> lista = new List<BaseCard>();
         foreach (var item in player.zonasdelplayer.listaDeLasZonas)
         {
             lista.AddRange(item);
@@ -56,54 +56,69 @@ public class Context
         return lista;
     }
 
-    public List<Card> GraveyardOfPlayer(Player player)
+    public List<BaseCard> GraveyardOfPlayer(Player player)
     {
         return player.zonasdelplayer.Cementerio;
     }
 
-    public List<Card> DeckOfPlayer(Player player)
+    public List<BaseCard> DeckOfPlayer(Player player)
     {
         return player.Deck;
     }
 
-    public List<Card> Hand()
+    public List<BaseCard> Hand()
     {
         return HandOfPlayer(board.JugadordelMomento());
     }
 
-    public List<Card> OtherHand()
+    public List<BaseCard> OtherHand()
     {
         return HandOfPlayer(board.EnemigodelMomento());
     }
 
-    public List<Card> Deck()
+    public List<BaseCard> Deck()
     {
         return DeckOfPlayer(board.JugadordelMomento());
     }
 
-    public List<Card> OtherDeck()
+    public List<BaseCard> OtherDeck()
     {
         return DeckOfPlayer(board.EnemigodelMomento());
     }
     
-    public List<Card> Field()
+    public List<BaseCard> Field()
     {
         return FieldOfPlayer(board.JugadordelMomento());
     }
 
-    public List<Card> OtherField()
+    public List<BaseCard> OtherField()
     {
         return FieldOfPlayer(board.EnemigodelMomento());
     }
     
-    public List<Card> Graveyard()
+    public List<BaseCard> Graveyard()
     {
         return GraveyardOfPlayer(board.JugadordelMomento());
     }
 
-     public List<Card> OtherGraveyard()
+     public List<BaseCard> OtherGraveyard()
     {
         return GraveyardOfPlayer(board.EnemigodelMomento());
+    }
+
+    public override object Ejecutar()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Tipo type()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool Semantica()
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -113,7 +128,7 @@ public class Context
 
 /*public class Interprete : Expresion.IVisitante<Object>, claseMadre.IVisitor<object>
 {
-    private Entorno entorno = new Entorno();  // Es una estructura que mantiene las variables y sus valores actuales. Actúa como un contexto de ejecución para las expresiones y cards
+    private Entorno entorno = new Entorno();  // Es una estructura que mantiene las variables y sus valores actuales. Actúa como un contexto de ejecución para las expresiones y Basecards
     
     //Expresion de Asignacion
     public object visitarAsignacionExpresion(Expresion.AsignarExpresion obj)
@@ -254,7 +269,7 @@ public class Context
         throw new NotImplementedException();
     }
 
-    public void Interpretar(List<claseMadre> cards) 
+    public void Interpretar(List<claseMadre> Basecards) 
     { 
         try 
         {
