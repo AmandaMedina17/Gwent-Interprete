@@ -24,7 +24,7 @@ public class Context : Expresion
 
     public int TriggerPlayer => board.JugadordelMomento().Id;  //Devuelve el Id del jugador que desencadeno el efecto. 
 
-    public List<BaseCard> Board()  //Devulve una lista con todas las cartas del tablero
+    public MetodosListas Board()  //Devulve una lista con todas las cartas del tablero
     {
         List<BaseCard> lista = new List<BaseCard>();
         foreach (var jugador in Jugadores.Values)
@@ -38,70 +38,70 @@ public class Context : Expresion
         {
             lista.Add(item);
         }
-        return lista;
+        return new MetodosListas(lista);
     }
 
-    public List<BaseCard> HandOfPlayer(Player player)
+    public MetodosListas HandOfPlayer(Player player)
     {
-        return player.Hand;
+        return new MetodosListas(player.Hand);
     }
 
-    public List<BaseCard> FieldOfPlayer(Player player)
+    public MetodosListas FieldOfPlayer(Player player)
     {
         List<BaseCard> lista = new List<BaseCard>();
         foreach (var item in player.zonasdelplayer.listaDeLasZonas)
         {
             lista.AddRange(item);
         }
-        return lista;
+        return new MetodosListas(lista);
     }
 
-    public List<BaseCard> GraveyardOfPlayer(Player player)
+    public MetodosListas GraveyardOfPlayer(Player player)
     {
-        return player.zonasdelplayer.Cementerio;
+        return new MetodosListas(player.zonasdelplayer.Cementerio);
     }
 
-    public List<BaseCard> DeckOfPlayer(Player player)
+    public MetodosListas DeckOfPlayer(Player player)
     {
-        return player.Deck;
+        return new MetodosListas(player.Deck);
     }
 
-    public List<BaseCard> Hand()
+    public MetodosListas Hand()
     {
         return HandOfPlayer(board.JugadordelMomento());
     }
 
-    public List<BaseCard> OtherHand()
+    public MetodosListas OtherHand()
     {
         return HandOfPlayer(board.EnemigodelMomento());
     }
 
-    public List<BaseCard> Deck()
+    public MetodosListas Deck()
     {
         return DeckOfPlayer(board.JugadordelMomento());
     }
 
-    public List<BaseCard> OtherDeck()
+    public MetodosListas OtherDeck()
     {
         return DeckOfPlayer(board.EnemigodelMomento());
     }
     
-    public List<BaseCard> Field()
+    public MetodosListas Field()
     {
         return FieldOfPlayer(board.JugadordelMomento());
     }
 
-    public List<BaseCard> OtherField()
+    public MetodosListas OtherField()
     {
         return FieldOfPlayer(board.EnemigodelMomento());
     }
     
-    public List<BaseCard> Graveyard()
+    public MetodosListas Graveyard()
     {
         return GraveyardOfPlayer(board.JugadordelMomento());
     }
 
-     public List<BaseCard> OtherGraveyard()
+     public MetodosListas OtherGraveyard()
     {
         return GraveyardOfPlayer(board.EnemigodelMomento());
     }

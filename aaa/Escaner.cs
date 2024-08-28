@@ -246,7 +246,7 @@ public class Escaner
             { "Power", TokenType.Power },
             { "Range", TokenType.Range },
             { "OnActivation", TokenType.OnActivation },
-            { "Efect", TokenType.Effect_card },
+            { "Effect", TokenType.Effect_card },
             { "Selector", TokenType.Selector },
             { "Source", TokenType.Source },
             { "Single", TokenType.Single },

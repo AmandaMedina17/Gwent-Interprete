@@ -15,7 +15,7 @@ public class Selector : Expresion
 
     public override object Ejecutar()
     {
-        List<BaseCard> lista;
+        MetodosListas lista;
         switch ((string)Source.Ejecutar())
         {
             case "board":
@@ -40,7 +40,7 @@ public class Selector : Expresion
                 lista = Context.context.OtherField();
                 break;
             case "parent":
-                lista = (List<BaseCard>)Parent.Ejecutar();
+                lista = (MetodosListas)Parent.Ejecutar();
                 break;
             default:
                 throw new Exception("Invalid source");

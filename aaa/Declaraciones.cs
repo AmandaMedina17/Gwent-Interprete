@@ -1,6 +1,6 @@
 public abstract class Declaracion : claseMadre
 {
-    public Entorno entorno = new Entorno();
+    
     // public new interface IVisitor<T>
     // {
     //     T VisitarForDecl(For Decl);
@@ -36,13 +36,13 @@ public abstract class Declaracion : claseMadre
                 switch (operador.Tipo)
                 {
                     case TokenType.Igual:
-                        entorno.define(var.Valor, valor);
+                        entorno.Set(var, valor);
                         break;
                     case TokenType.Aumentar:
-                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor], entorno.Valores[var.Valor], new Token(TokenType.Más, "+", null, 0)));
+                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor], valor, new Token(TokenType.Más, "+", null, 0)));
                         break;
                     case TokenType.Disminuir:
-                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor],  entorno.Valores[var.Valor],new Token(TokenType.Menos, "-", null, 0)));
+                        entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor], valor,new Token(TokenType.Menos, "-", null, 0)));
                         break;
                     case TokenType.Mas_mas:
                         entorno.Set(var, new Expresion.ExpresionBinaria(entorno[var.Valor], new Expresion.ExpresionLiteral(new Token(TokenType.Número, "1", null, 0)), new Token(TokenType.Más, "+", null, 0)));
@@ -56,7 +56,7 @@ public abstract class Declaracion : claseMadre
             }
             catch (NullReferenceException)
             {
-                //if there is no operation defined, then nothing will execute and this will only allow to access the variable value
+               System.Console.WriteLine("Se accedio al valor");
             }
             
         }
@@ -161,6 +161,7 @@ public abstract class Declaracion : claseMadre
     }
     public class For : Declaracion
     {
+        Entorno entorno;
         public Token var;
         public Expresion Colection;
         public Bloque body;
@@ -183,7 +184,7 @@ public abstract class Declaracion : claseMadre
                 throw new Exception("error");
             }
 
-            if (entorno.Valores.ContainsKey(var.Valor)) throw new Exception("Variable already defined previously.");
+            if (entorno.Contains(var.Valor)) throw new Exception("Variable already defined previously.");
 
             while (colection.MoveNext())
             {
@@ -282,6 +283,8 @@ public abstract class Declaracion : claseMadre
 
         public override bool Semantica()
         {
+            
+
             if(!(Inicializador is null) && !Inicializador.Semantica())
             {
                 return false;
@@ -292,17 +295,25 @@ public abstract class Declaracion : claseMadre
 
         public override void Ejecutar()
         {
-            object valor = null;
-            if (Inicializador != null) 
-            {
-                valor = Inicializador.Ejecutar();
+            try{
+                entorno.Set(Nombre, Inicializador);
             }
+            catch
+            {
+                throw new Exception("valor mal");
+            }
+            // object valor = null;
+            // if (Inicializador != null) 
+            // {
+            //     valor = Inicializador.Ejecutar();
+            // }
 
-            entorno.define(Nombre.Valor, (Expresion)valor);
+            // entorno.define(Nombre.Valor, (Expresion)valor);
         }
 
         public Token Nombre { get; }
         public Expresion Inicializador { get; }
+        Entorno entorno;
     }
 
     public class While : Declaracion

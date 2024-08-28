@@ -3,7 +3,6 @@ using System.Reflection;
 
 public abstract class Expresion
 {
-    public Entorno entorno = new Entorno();
     public abstract object Ejecutar();
     public abstract Tipo type();
     public abstract bool Semantica();
@@ -22,7 +21,7 @@ public abstract class Expresion
         public override object Ejecutar()
         {
             object expresionValor = valor.Ejecutar();
-            entorno.asignar(nombre, valor);
+            Entorno.Encerrado.asignar(nombre, valor);
             return valor;    
         }
 
@@ -507,7 +506,7 @@ public abstract class Expresion
 
         public override object Ejecutar()
         {
-            return entorno.Get(nombre);    
+            return Entorno.Encerrado.Get(nombre);    
         }
 
         public override bool Semantica()
@@ -517,9 +516,9 @@ public abstract class Expresion
 
         public override Tipo type()
         {
-            if(entorno.Valores[nombre.Valor] is string) return Tipo.Cadena;
-            if(entorno.Valores[nombre.Valor] is double) return Tipo.Numero;
-            if(entorno.Valores[nombre.Valor] is bool) return Tipo.Bool;
+            if(Entorno.Encerrado.Valores[nombre.Valor] is string) return Tipo.Cadena;
+            if(Entorno.Encerrado.Valores[nombre.Valor] is double) return Tipo.Numero;
+            if(Entorno.Encerrado.Valores[nombre.Valor] is bool) return Tipo.Bool;
             throw new Exception("tipo invalido");
 
         }
@@ -529,11 +528,13 @@ public abstract class Expresion
     {
         public Token var;
         public Expresion condicion;
+        Entorno entorno;
 
-        public Predicate(Token var, Expresion condicion)
+        public Predicate(Token var, Expresion condicion, Entorno entorno)
         {
             this.var = var;
             this.condicion = condicion;
+            this.entorno = entorno;
         }
         public override object Ejecutar()
         {

@@ -25,6 +25,7 @@ public class BaseCard
     }
     public void Place(List<BaseCard> PlaceRightNow) => this.PlaceRightNow = PlaceRightNow is null ? Context.context.Jugadores[Faction].Hand : PlaceRightNow;
 
+    public Player Owner { get => Context.context.Jugadores[Faction]; set => Owner = value; }
     public void SelectEffect(EffectDelegate effectDelegate)
     {
         if(effectDelegate == null) EffectDelegate = WarehouseOfEffects.EmptyEffect;

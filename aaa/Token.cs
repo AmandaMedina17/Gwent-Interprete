@@ -37,7 +37,7 @@ public enum TokenType {
     // Palabras clave.
     And, Class, Else, False, For, If, Or, Return, True, Var, While, Fun, Print, In, 
 
-    Effect, Name, Params, Amount, Action, Card, Type, Faction, Power, Range, OnActivation, Selector, 
+    Effect, Name, Params, Amount, Action, Card, Type, Faction, Power, Range, OnActivation,  Selector, 
     Source, Single, Predicate, PostAction, Effect_card, Targets, Context,
 
     Fin, Null,

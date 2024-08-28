@@ -19,15 +19,11 @@ public class Entorno
                 return encerrado;
             }
         }    
-    public Entorno()
+    public Entorno(Entorno parent=null)
     {
-        this.parent = null;
+        this.parent = parent ?? this.parent;
     }
 
-    public Entorno(Entorno parent)
-    {
-        this.parent = parent;
-    }
 
     public object Get(Token nombre) 
     {
@@ -85,8 +81,8 @@ public class Entorno
                 }
 
             }
-            else if (parent.Valores.ContainsKey(var.Valor)) parent.Valores[var.Valor]= valor;
-            else Valores.Add(var.Valor, valor);
+            else if (ContenidoParent(var.Valor)) Modificar(var.Valor, valor);
+            else this.Valores.Add(var.Valor, valor);
         }
 
     public Expresion this[string name]
@@ -96,10 +92,10 @@ public class Entorno
                 try
                 {
                     if (Valores.ContainsKey(name)) return Valores[name];
-                    else if (parent.Valores.ContainsKey(name)) return parent.Valores[name];
-                    else throw new KeyNotFoundException();
+                    else if (ContenidoParent(name)) return CogerDeParent(name);
+                    else throw new Exception("KeyNotFoundException");
                 }
-                catch (KeyNotFoundException)
+                catch
                 {
                     throw new Exception("Variable no declarada");
                 }
@@ -109,13 +105,33 @@ public class Entorno
                 try
                 {
                     if (Valores.ContainsKey(name)) Valores[name] = value;
-                    else if (parent.Valores.ContainsKey(name)) parent.Valores[name] = value;
-                    else throw new KeyNotFoundException();
+                    else if (ContenidoParent(name)) Modificar(name, value);
+                    else throw new Exception("KeyNotFoundException");
                 }
-                catch (KeyNotFoundException)
+                catch
                 {
                     throw new Exception("Variable no declarada");
                 }
             }
         }
+
+    Expresion CogerDeParent(string var)
+    {
+        if (parent.Valores.ContainsKey(var)) return parent.Valores[var];
+        else return parent.CogerDeParent(var);
+    }
+
+    public void Modificar(string var, Expresion valor)
+    {
+        if (parent.Valores.ContainsKey(var)) parent.Valores[var] = valor;
+        else parent.Modificar(var, valor);
+    }
+
+    public bool ContenidoParent(string var)
+    {
+        if(parent == null) return false;
+        return parent.Contains(var);
+    }
+
+    public bool Contains(string var) => Valores.ContainsKey(var) || ContenidoParent(var);
 }
