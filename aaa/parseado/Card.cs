@@ -1,9 +1,9 @@
 public class Card : claseMadre
 {
-    private Expresion.ExpresionLiteral name;
-    private Expresion.ExpresionLiteral type;
-    private Expresion.ExpresionLiteral faction;
-    private Expresion.ExpresionLiteral power;
+    private Expresion name;
+    private Expresion type;
+    private Expresion faction;
+    private Expresion power;
     private List<Expresion> range;
     public Effect effect;
     OnActivation onActivation;
@@ -12,7 +12,7 @@ public class Card : claseMadre
 
 
 
-    public Card(Expresion.ExpresionLiteral name, Expresion.ExpresionLiteral type, Expresion.ExpresionLiteral faction, Expresion.ExpresionLiteral power, List<Expresion> range, OnActivation onActivation) 
+    public Card(Expresion name, Expresion type, Expresion faction, Expresion power, List<Expresion> range, OnActivation onActivation) 
     {
         this.name = name;
         this.type = type;
@@ -24,10 +24,10 @@ public class Card : claseMadre
  
     public override bool Semantica()
     {
-        if(!(name.Type is Tipo.Cadena)) return false;
-        if(!(type.Type is Tipo.Cadena)) return false;
-        if(!(faction.Type is Tipo.Cadena)) return false;
-        if(!(power.Type is Tipo.Numero)) return false;
+        if(!(name.type() is Tipo.Cadena)) return false;
+        if(!(type.type() is Tipo.Cadena)) return false;
+        if(!(faction.type() is Tipo.Cadena)) return false;
+        if(!(power.type() is Tipo.Numero)) return false;
 
         return true;
     }
@@ -88,8 +88,18 @@ public class Card : claseMadre
                     throw new Exception("Invalid card type.");
             } 
 
-            if (!(onActivation is null)) cartas[cartas.Count-1].SelectEffect(onActivation.Ejecucion);
+        if (!(onActivation is null)) cartas[cartas.Count - 1].SelectEffect((EstadoDeJuego estadoDeJuego) => {
+            try
+            {
+                onActivation.Ejecutar();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         
+        });
     }
 
 }

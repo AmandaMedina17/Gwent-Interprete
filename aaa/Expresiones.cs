@@ -580,7 +580,7 @@ public abstract class Expresion
 
         public override Tipo type()
         {
-            throw new NotImplementedException();
+            return valor.type;
         }
     }
 }

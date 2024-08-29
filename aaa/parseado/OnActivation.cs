@@ -1,8 +1,8 @@
 public class OnActivation : Declaracion
 {
-    public Dictionary<ActivacionEfecto, ActivacionEfecto> efectos;
+    public List<(ActivacionEfecto, ActivacionEfecto)> efectos;
 
-    public OnActivation(Dictionary<ActivacionEfecto, ActivacionEfecto> efectos)
+    public OnActivation(List<(ActivacionEfecto, ActivacionEfecto)> efectos)
     {
         this.efectos = efectos;
     }
@@ -10,9 +10,23 @@ public class OnActivation : Declaracion
     public override void Ejecutar()
     {
         foreach (var item in efectos)
-        {
-            item.Key.Ejecutar(); 
-            if(!(item.Value is null)) item.Value.Ejecutar();
+        { try
+            {
+                item.Item1.Ejecutar();
+            }
+        catch(Exception)
+            {
+                System.Console.WriteLine("Effecto invalido");
+            }
+
+        try
+            {
+                item.Item2.Ejecutar();
+            }
+        catch (Exception )
+            {
+                System.Console.WriteLine("Effecto invalido");
+            }
         }
     }
 
@@ -20,12 +34,12 @@ public class OnActivation : Declaracion
     {
         foreach (var item in efectos)
         {
-            if(!item.Key.Semantica())
+            if(!item.Item1.Semantica())
             {
                 System.Console.WriteLine("Efecto invalido");
                 return false;
             }
-            if(item.Value.Semantica())
+            if(item.Item2.Semantica())
             {
                 System.Console.WriteLine("Efecto invalido");
                 return false;

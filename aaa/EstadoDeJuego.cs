@@ -13,4 +13,12 @@ public class EstadoDeJuego
         this.enemy = enemy;
     }
 
+    public EstadoDeJuego UpdatePlayerInstance(List<BaseCard> position, BaseCard card)
+    {
+        lista = position;
+        this.card = card;
+
+        return this;
+    }
+
 }

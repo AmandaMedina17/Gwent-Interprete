@@ -123,6 +123,11 @@ class Parser
         return mira().Tipo == tipo;
 
     }
+    public bool Proximo(params TokenType[] typesToMatch)
+    {
+        Token nextToken = tokens[Current + 1];
+        return nextToken != null && typesToMatch.Contains(nextToken.Tipo);
+    }
     public Token avanza() // Avanza al siguiente token y devuelve el token actual
     {
         if (!esFinal()) Current++; 
@@ -250,7 +255,7 @@ class Parser
 
                         if (!coincide(TokenType.Corchete_Cerrado)) error(mira(), "Indexador invalido");
                     }
-                    else if (coincide(TokenType.Parentesis_cerrado) && coincide(TokenType.Lambda)) return Predicate(variable);
+                    else if (Proximo(TokenType.Lambda) && coincide(TokenType.Parentesis_cerrado) && coincide(TokenType.Lambda)) return Predicate(variable);
 
                     else expr = new Expresion.DeclVar(new Declaracion.IncYDec(variable, entornos.Peek()));
 
@@ -260,7 +265,7 @@ class Parser
                 while (coincide(TokenType.Punto))
                 {
                     Token caller = null;
-                    if (esKeyword(mira()) || coincide(TokenType.Identificador)) caller = anterior();
+                    if (coincide(TokenType.Identificador, TokenType.Faction, TokenType.Power)) caller = anterior();
                     else error(mira(), "Se esperaba un valor");
 
                     if (coincide(TokenType.Parentesis_abierto))
@@ -270,7 +275,6 @@ class Parser
                             List<Expresion> arguments = new List<Expresion>();
 
                             do{ arguments.Add(expresion()); 
-                            Current--;
                             }while (coincide(TokenType.Coma));
 
                             if (!coincide(TokenType.Parentesis_cerrado)) error(mira(), "Se esperaba parentesis cerrado");
@@ -437,7 +441,6 @@ class Parser
     {
         consume(TokenType.Parentesis_abierto, "Se esperaba ( despues de while");
         Expresion condicion = expresion();
-        Current -= 1;
         consume(TokenType.Parentesis_cerrado, "Se esperaba ) despues de la condicion");
         Declaracion cuerpo = null;
         if (coincide(TokenType.Llave_abierta)) cuerpo = new Declaracion.Bloque(bloque());
@@ -480,10 +483,10 @@ class Parser
 
     public Card cardDeclaracion()
     {
-        Expresion.ExpresionLiteral name = null;
-        Expresion.ExpresionLiteral faction = null;
-        Expresion.ExpresionLiteral type = null;
-        Expresion.ExpresionLiteral power = null;
+        Expresion name = null;
+        Expresion faction = null;
+        Expresion type = null;
+        Expresion power = null;
         List<Expresion> range = new List<Expresion>();
         OnActivation onActivation = null;
 
@@ -491,7 +494,8 @@ class Parser
         {
             try
             {
-                if(coincide(TokenType.Name)) name = AsignarExpresion(name is null);  
+                if(verifica(TokenType.Fin)) error(mira(), "Carta invalida");
+                else if(coincide(TokenType.Name)) name = AsignarExpresion(name is null);  
                 else if(coincide(TokenType.Faction)) faction = AsignarExpresion(faction is null);
                 else if(coincide(TokenType.Type)) type = AsignarExpresion(type is null);
                 else if(coincide(TokenType.Power)) power = AsignarExpresion(power is null);
@@ -513,27 +517,25 @@ class Parser
                     {
                         if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba el cuerpo del OnActivation");
                         
-                        Dictionary<Declaracion.ActivacionEfecto, Declaracion.ActivacionEfecto> effects = new Dictionary<Declaracion.ActivacionEfecto, Declaracion.ActivacionEfecto>();
+                        List<(Declaracion.ActivacionEfecto, Declaracion.ActivacionEfecto)> effects = new List<(Declaracion.ActivacionEfecto, Declaracion.ActivacionEfecto)>();
 
                         
                         if (coincide(TokenType.Corchete_Abierto))
                         {
                             do
                             {
-                                var effectPair = AsignarEfecto();
-                                effects.Add(effectPair.Key, effectPair.Value);
+                                effects.Add(AsignarEfecto());
                                 if (!coincide(TokenType.Coma) && !verifica(TokenType.Corchete_Cerrado))  error(mira(), "Estructura invalida");
 
-                            } while (!coincide(TokenType.Llave_cerrada));
+                            } while (!coincide(TokenType.Corchete_Cerrado));
                         }
                         else 
                         {
-                            var effectPair = AsignarEfecto();
-                            effects.Add(effectPair.Key, effectPair.Value);
+                            effects.Add(AsignarEfecto());
                         }
 
                         onActivation = new OnActivation(effects);
-                        if (!coincide(TokenType.Coma)) error(mira(), "Se esperaba una coma");
+                        if (!coincide(TokenType.Coma) && !verifica(TokenType.Llave_cerrada) && !Proximo(TokenType.Fin)) error(mira(), "Se esperaba una coma");
                     }
 
                     else throw new Exception("Declaracion invalida de carta");
@@ -553,70 +555,72 @@ class Parser
 
     } 
 
-    KeyValuePair<Declaracion.ActivacionEfecto, Declaracion.ActivacionEfecto> AsignarEfecto()
-{
-    if (!coincide(TokenType.Llave_abierta)) error(mira(), "Se esperaba '{'");
-
-    Expresion effectName = null;
-    List<(Token, Expresion)> _params = new List<(Token, Expresion)>();
-    Expresion selector = null;
-    Expresion PostAction = null;
-    List<(Token, Expresion)> _paramsPostAction = new List<(Token, Expresion)>();
-    Expresion selectorPostAction = null;
-
-    do
+    (Declaracion.ActivacionEfecto, Declaracion.ActivacionEfecto) AsignarEfecto()
     {
-         try
-                {
-                    if (verifica(TokenType.Fin)) error(mira(), "Declaracion no terminada");
+        if (!coincide(TokenType.Llave_abierta, TokenType.Effect_card)) error(mira(), "Se esperaba '{'");
 
-                    else if (coincide(TokenType.Effect_card))
-                    {
-                        if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba ':'");
+        Expresion effectName = null;
+        List<(Token, Expresion)> _params = new List<(Token, Expresion)>();
+        Expresion selector = null;
+        Expresion PostAction = null;
+        List<(Token, Expresion)> _paramsPostAction = new List<(Token, Expresion)>();
+        Expresion selectorPostAction = null;
 
-                        if (coincide(TokenType.Llave_abierta)) CuerpoDelEfecto(ref effectName, ref _params, TokenType.Name);
-                        else effectName = expresion();
+        if (coincide(TokenType.Doble_punto))
+            {
+                effectName = expresion();
+                selector = new Selector(new Expresion.ExpresionLiteral(new Token(TokenType.Cadena, "board", null, 0)), new Expresion.ExpresionLiteral(new Token( TokenType.True, "true",null, 0)));
+            }
+        else do
+            {
+                try
+                        {
+                            if (verifica(TokenType.Fin)) error(mira(), "Declaracion no terminada");
 
-                        if (!coincide(TokenType.Coma)) error(mira(), "Se esperaba ','");
-                    }
+                            else if (coincide(TokenType.Effect_card))
+                            {
+                                if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba ':'");
 
-                    else if (coincide(TokenType.Selector))
-                    {
-                        if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba ':'");
-                        if (!coincide(TokenType.Llave_abierta)) error(mira(), "Se esperaba '{'");
-                        selector = Selector();
-                    }
+                                if (coincide(TokenType.Llave_abierta)) CuerpoDelEfecto(ref effectName, ref _params, TokenType.Name);
+                                else effectName = expresion();
 
-                    else if (coincide(TokenType.PostAction))
-                    {
-                        if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba ':'");
+                                if (!coincide(TokenType.Coma) && !verifica(TokenType.Llave_cerrada)) error(mira(), "Se esperaba ','");
+                            }
 
-                        if (coincide(TokenType.Llave_abierta)) selectorPostAction = CuerpoDelEfecto(ref PostAction, ref _paramsPostAction, TokenType.Type, selector);
-                        else effectName = expresion();
+                            else if (coincide(TokenType.Selector))
+                            {
+                                if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba ':'");
+                                if (!coincide(TokenType.Llave_abierta)) error(mira(), "Se esperaba '{'");
+                                selector = Selector();
+                            }
 
-                        if (!coincide(TokenType.Coma)) error(mira(), "Se esperaba ','"); 
-                    }
+                            else if (coincide(TokenType.PostAction))
+                            {
+                                if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba ':'");
 
-                    else error(mira(), "");
-                }
-                catch
-                {
-                    sincronizar();
-                }
-            } while (!coincide(TokenType.Llave_cerrada));
+                                if (coincide(TokenType.Llave_abierta)) selectorPostAction = CuerpoDelEfecto(ref PostAction, ref _paramsPostAction, TokenType.Type, selector);
+                                else effectName = expresion();
 
-    if (effectName is null) throw new Exception("Nombre del efecto invalido");
-    if (selector is null) throw new Exception("Selector invalido");
-    if (!(PostAction is null)) 
-    {
-        if(selectorPostAction is null) throw new Exception("Selector del PostAction invalido");
-    }
+                                if (!coincide(TokenType.Coma) && !verifica(TokenType.Llave_cerrada)) error(mira(), "Se esperaba ','"); 
+                            }
 
-    Declaracion.ActivacionEfecto key = new Declaracion.ActivacionEfecto(effectName, _params, selector);
-    Declaracion.ActivacionEfecto value = new Declaracion.ActivacionEfecto(PostAction, _paramsPostAction, selectorPostAction is null ? selector : selectorPostAction);
+                            else error(mira(), "Efecto invalido");
+                        }
+                        catch
+                        {
+                            System.Console.WriteLine("Efecto invalido");
+                            sincronizar();
+                        }
+                    } while (!coincide(TokenType.Llave_cerrada));
 
-    return new KeyValuePair<Declaracion.ActivacionEfecto, Declaracion.ActivacionEfecto> (key, value);
-}
+        if (effectName is null) throw new Exception("Nombre del efecto invalido");
+        if (selector is null) throw new Exception("Selector invalido");
+        if (!(PostAction is null)) 
+        {
+            if(selectorPostAction is null) throw new Exception("Selector del PostAction invalido");
+        }
+
+        return (new Declaracion.ActivacionEfecto(effectName, _params, selector), new Declaracion.ActivacionEfecto(PostAction, _paramsPostAction, selectorPostAction is null? selector : selectorPostAction));    }
 
 
      Expresion CuerpoDelEfecto(ref Expresion effectName, ref List<(Token, Expresion)> _params, TokenType name, Expresion parentSelector = null)
@@ -626,7 +630,7 @@ class Parser
             {
                 try
                 {
-                    if (verifica(TokenType.Fin)) error(mira(), "");
+                    if (verifica(TokenType.Fin)) error(mira(), "Selector incompleto");
 
                     else if (coincide(name)) effectName = AsignarExpresion(effectName is null);
 
@@ -634,14 +638,15 @@ class Parser
 
                     else if (name is TokenType.Type && coincide(TokenType.Selector))
                     {
-                        if (!coincide(TokenType.Doble_punto)) error(mira(), "");
-                        if (!coincide(TokenType.Llave_abierta)) error(mira(), "");
+                        if (!coincide(TokenType.Doble_punto)) error(mira(), "Se esperaba ':'");
+                        if (!coincide(TokenType.Llave_abierta)) error(mira(), "Se esperaba '{'");
                         selector = Selector(parentSelector);
                     }
                     else throw new Exception("Se esperaba un selector");
                 }
                 catch 
                 {
+                    System.Console.WriteLine("Cuerpo del efecto invalido");
                     sincronizar();
                 }
             } while (!coincide(TokenType.Llave_cerrada));
@@ -654,6 +659,7 @@ class Parser
             Expresion source = null;
             Expresion single = null;
             Expresion predicate = null;
+            System.Console.WriteLine(Current);
 
             do
             {
@@ -667,13 +673,15 @@ class Parser
 
                     else if (coincide(TokenType.Predicate)) predicate = AsignarExpresion(predicate is null);
 
-                    else throw new Exception("Selector invalido");
                 }
                 catch 
                 {
-                    sincronizar();
+                    System.Console.WriteLine("Selector invalido");
+
                 }
             } while (!coincide(TokenType.Llave_cerrada));
+
+            if(!coincide(TokenType.Coma)) error(mira(), "Se esperaba una coma");
 
             if (source is null) throw new Exception("Source invalido");
             if (predicate is null) throw new Exception("Predicate invalido");
@@ -694,6 +702,7 @@ class Parser
 
                 if (!coincide(TokenType.Lambda)) error(mira(), "Invalid Predicate");
             }
+            entornos.Push(new Entorno(entornos.Peek()));
             Expresion condition = expresion();
             return new Expresion.Predicate(variable, condition, entornos.Pop());
         }
@@ -702,7 +711,7 @@ class Parser
 
     public Effect effectDeclaracion()
     { 
-        Expresion.ExpresionLiteral name = null;
+        Expresion name = null;
         Declaracion Action = null;
         Token targets = null;
         Token context = null;
@@ -762,15 +771,15 @@ class Parser
         return new Effect(name, Action, parametros, targets, context);
     }
 
-    public Expresion.ExpresionLiteral AsignarExpresion(bool estado)
+    public Expresion AsignarExpresion(bool estado)
     {
         if(!estado) throw error(mira(), "Expresion ya asiganda");
 
-        Expresion.ExpresionLiteral Expr = null;
+        Expresion Expr = null;
 
-        if(coincide(TokenType.Doble_punto)) Expr = (Expresion.ExpresionLiteral?)primario();
+        if(coincide(TokenType.Doble_punto)) Expr = expresion();
 
-        if(!coincide(TokenType.Coma)) error(mira(), "A comma is expected");
+        if(!coincide(TokenType.Coma) && !verifica(TokenType.Llave_cerrada)) error(mira(), "A comma is expected");
         return Expr;
     }
 

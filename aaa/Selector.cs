@@ -5,7 +5,7 @@ public class Selector : Expresion
     public Expresion Predicate;
     public Expresion Parent;
 
-    public Selector(Expresion Source, Expresion Single, Expresion Predicate, Expresion Parent)
+    public Selector(Expresion Source,  Expresion Predicate, Expresion Single= null,Expresion Parent = null)
     {
         this.Source = Source;
         this.Single = Single;

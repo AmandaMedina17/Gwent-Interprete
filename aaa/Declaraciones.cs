@@ -61,6 +61,8 @@ public abstract class Declaracion : claseMadre
             
         }
 
+        public Tipo type => valor is null? entorno[var.Valor].type() : valor.type();
+
         // public override T Aceptar<T>(IVisitor<T> visitante)
         // {
         //     throw new NotImplementedException();

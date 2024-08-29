@@ -123,6 +123,51 @@ public class Tablero
         return Ganador;
     }
 
-   
+   public void CalculateTotalDamage(Player player = null)
+    {
+        if (player == null)
+        {
+            CalculateTotalDamage(Player.Nordicos);
+            player = Player.Griegos;
+        }
+
+        player.TotalPoint = 0;
+
+        double[] bonusMultipliers = new double[3];
+        for (int i = 0; i < bonusMultipliers.Length; i++)
+        {
+            bonusMultipliers[i] = player.zonasdelplayer.Increase[i] is IncreaseCard ? ((IncreaseCard)player.zonasdelplayer.Increase[i]).Incremento : 1;
+        }
+
+        ApplyClimateEffects(player);
+
+        foreach (var zone in player.zonasdelplayer.listaDeLasZonas)
+        {
+            foreach (BaseCard card in zone)
+            {
+                if (card is UnitCard unit)
+                {
+                    double damageMultiplier = unit.worth == Worth.Golden ? 1 : bonusMultipliers[player.zonasdelplayer.listaDeLasZonas.IndexOf(zone)];
+                    player.TotalPoint += (int)(unit.Power * damageMultiplier);
+                }
+            }
+        }
+    }
+
+    private void ApplyClimateEffects(Player player)
+    {
+        foreach (BaseCard card in this.Climate)
+        {
+            if (card is ClimateCard climate)
+            {
+                if (climate.Owner.estadoDeJuego == null)
+                {
+                    climate.Owner.estadoDeJuego = new EstadoDeJuego(climate.Owner, tablero.EnemigodelMomento());
+                }
+
+                climate.Effect(climate.Owner.estadoDeJuego.UpdatePlayerInstance(this.Climate, climate));
+            }
+        }
+    }
 
 }

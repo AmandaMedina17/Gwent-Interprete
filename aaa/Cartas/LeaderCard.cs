@@ -4,16 +4,17 @@ public class LeaderCard : BaseCard
     {
     }
 
-    public override void Effect(EstadoDeJuego estadoDeJuego)
+    public override bool Effect(EstadoDeJuego estadoDeJuego)
     {
         try
         {
             if(!(EffectDelegate is null)) EffectDelegate.Invoke(estadoDeJuego)  ;
+            return true;
                                       
         }
         catch(System.NullReferenceException)
         {
-           
+           return false;
         }
     }
 }

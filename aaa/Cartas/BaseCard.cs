@@ -32,16 +32,16 @@ public class BaseCard
         else EffectDelegate = effectDelegate;
     }
 
-    public virtual void Effect(EstadoDeJuego estadoDeJuego)
+    public virtual bool Effect(EstadoDeJuego estadoDeJuego)
     {
         try
         {
-            EffectDelegate.Invoke(estadoDeJuego);
+            return EffectDelegate is null ? true : EffectDelegate.Invoke(estadoDeJuego);
 
         }
         catch (System.NullReferenceException)
         {
-          
+            return false;
         }
     }
 

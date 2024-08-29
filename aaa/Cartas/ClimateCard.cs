@@ -5,11 +5,12 @@ public class ClimateCard : BaseCard
     {
     }
 
-    public override void Effect(EstadoDeJuego estadoDeJuego) 
+    public override bool Effect(EstadoDeJuego estadoDeJuego) 
     {
         ClimateEffect(Zonas.Melee); 
         ClimateEffect(Zonas.Range); 
         ClimateEffect(Zonas.Siege); 
+        return true;
     }
 
     private void ClimateEffect(Zonas range)

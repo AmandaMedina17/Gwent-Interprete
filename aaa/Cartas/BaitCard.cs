@@ -5,16 +5,15 @@ public class BaitCard : BaseCard
     {
     }
 
-      public override void Effect(EstadoDeJuego estadoDeJuego)
+      public override bool Effect(EstadoDeJuego estadoDeJuego)
     {
         try
         {
-            if(!(EffectDelegate is null))  Effect(estadoDeJuego.lista, estadoDeJuego.lista.IndexOf(estadoDeJuego.card));
-            else EffectDelegate.Invoke(estadoDeJuego);
+            return Effect(estadoDeJuego.lista, estadoDeJuego.lista.IndexOf(estadoDeJuego.card)) & EffectDelegate.Invoke(estadoDeJuego);
         }
         catch (System.NullReferenceException)
         {
-          
+            return false;
         }
     }
 

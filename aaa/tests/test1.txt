@@ -68,7 +68,7 @@ Single: false, // aunque por defecto es false.
 
 Predicate: (unit) => unit. Faction == "Northern" @@ "Realms"
 
-}
+},
 
 PostAction: {
 
@@ -85,12 +85,7 @@ Predicate: (unit) => unit.Power < 1
 
 }
 
-},
-
-{
-     Effect: "Draw" // si se pone un string directo es equivalente a { Name: "Draw" }
-}
-   
+}, 
 
 ]
 
